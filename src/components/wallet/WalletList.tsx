@@ -32,7 +32,7 @@ export const WalletList = ({
 
   const fetchWallets = async () => {
     try {
-      const response = await fetch("https://172.16.61.201:8090/v2/wallets");
+      const response = await fetch("http://172.16.61.201:8090/v2/wallets");
       if (!response.ok) {
         throw new Error("Failed to fetch wallets");
       }
