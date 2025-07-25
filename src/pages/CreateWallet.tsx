@@ -5,6 +5,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
+import { ArrowLeft } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const CreateWallet = () => {
   const [mnemonic, setMnemonic] = useState("");
@@ -12,6 +14,7 @@ const CreateWallet = () => {
   const [passphrase, setPassphrase] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const handleSubmit = async () => {
     if (!mnemonic || !walletName) {
@@ -49,7 +52,16 @@ const CreateWallet = () => {
 
   return (
     <div className="min-h-screen p-4 bg-background">
-      <div className="max-w-md mx-auto">
+      <div className="max-w-md mx-auto space-y-4">
+        <Button 
+          variant="ghost" 
+          size="sm" 
+          onClick={() => navigate('/')}
+          className="flex items-center gap-2"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Back
+        </Button>
         <Card>
           <CardHeader>
             <CardTitle>Create Wallet</CardTitle>

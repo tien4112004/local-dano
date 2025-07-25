@@ -1,6 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { ExternalLink } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 interface WalletHeaderProps {
@@ -11,6 +12,12 @@ interface WalletHeaderProps {
 
 export const WalletHeader = ({ address, balance, networkId }: WalletHeaderProps) => {
   const navigate = useNavigate();
+
+  const openInTab = () => {
+    if (typeof chrome !== 'undefined' && chrome.tabs) {
+      chrome.tabs.create({ url: chrome.runtime.getURL('index.html') });
+    }
+  };
 
   const formatBalance = (lovelace: string) => {
     const ada = (parseInt(lovelace) / 1000000).toFixed(2);
@@ -26,9 +33,19 @@ export const WalletHeader = ({ address, balance, networkId }: WalletHeaderProps)
       <CardHeader className="pb-2">
         <CardTitle className="flex items-center justify-between">
           <span>LocalDano Wallet</span>
-          <Badge variant={networkId === 1 ? "default" : "secondary"}>
-            {networkId === 1 ? "Mainnet" : "Testnet"}
-          </Badge>
+          <div className="flex items-center gap-2">
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={openInTab}
+              className="h-6 w-6 p-0"
+            >
+              <ExternalLink className="h-3 w-3" />
+            </Button>
+            <Badge variant={networkId === 1 ? "default" : "secondary"}>
+              {networkId === 1 ? "Mainnet" : "Testnet"}
+            </Badge>
+          </div>
         </CardTitle>
       </CardHeader>
       <CardContent>
