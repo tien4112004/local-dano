@@ -16,7 +16,7 @@ interface Wallet {
 const Index = () => {
   const [selectedWallet, setSelectedWallet] = useState<Wallet | null>(null);
   const [walletData, setWalletData] = useState({
-    address: "addr1qx2fxv2umyhttkxyxp8x0dlpdt3k6cwng5pxj3jhsydzer3jcu5d8ps7zex2k2xt3uqxgjqnnj0vs2qd4a2ksq8t4cqg2jk5z8",
+    address: "",
     balance: "1000000000", // 1000 ADA in lovelace
     networkId: 1
   });
@@ -25,12 +25,33 @@ const Index = () => {
     // Initialize wallet data
     console.log("LocalDano Wallet Extension loaded");
     
-    // Store selected wallet for injected script access
+    // Store selected wallet for injected script access and fetch address
     if (selectedWallet) {
       (window as any).selectedWalletId = selectedWallet.id;
+      
+      // Fetch wallet addresses
+      const fetchWalletAddress = async () => {
+        try {
+          const response = await fetch(`http://172.16.61.201:8090/v2/wallets/${selectedWallet.id}/addresses`);
+          if (response.ok) {
+            const addresses = await response.json();
+            const address = addresses.length > 0 ? addresses[0].id : "";
+            setWalletData({
+              address,
+              balance: (selectedWallet.balance.total.quantity * 1000000).toString(), // Convert to lovelace
+              networkId: 1
+            });
+          }
+        } catch (error) {
+          console.error("Failed to fetch wallet addresses:", error);
+        }
+      };
+      
+      fetchWalletAddress();
+    } else {
       setWalletData({
-        address: selectedWallet.id,
-        balance: (selectedWallet.balance.total.quantity * 1000000).toString(), // Convert to lovelace
+        address: "",
+        balance: "1000000000",
         networkId: 1
       });
     }
@@ -48,6 +69,7 @@ const Index = () => {
           balance={selectedWallet ? walletData.balance : undefined}
           networkId={walletData.networkId}
           hasSelectedWallet={!!selectedWallet}
+          selectedWalletId={selectedWallet?.id}
         />
         <WalletList 
           onWalletSelect={handleWalletSelect}

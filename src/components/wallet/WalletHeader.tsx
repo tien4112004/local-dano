@@ -9,9 +9,10 @@ interface WalletHeaderProps {
   balance?: string;
   networkId: number;
   hasSelectedWallet: boolean;
+  selectedWalletId?: string;
 }
 
-export const WalletHeader = ({ address, balance, networkId, hasSelectedWallet }: WalletHeaderProps) => {
+export const WalletHeader = ({ address, balance, networkId, hasSelectedWallet, selectedWalletId }: WalletHeaderProps) => {
   const navigate = useNavigate();
 
   const openInTab = () => {
@@ -53,9 +54,18 @@ export const WalletHeader = ({ address, balance, networkId, hasSelectedWallet }:
         <div className="space-y-3">
           {hasSelectedWallet ? (
             <>
-              <div>
-                <p className="text-sm text-muted-foreground">Balance</p>
-                <p className="text-2xl font-bold">{formatBalance(balance!)}</p>
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-muted-foreground">Balance</p>
+                  <p className="text-2xl font-bold">{formatBalance(balance!)}</p>
+                </div>
+                <Button 
+                  onClick={() => navigate('/faucet', { state: { address } })} 
+                  variant="outline" 
+                  size="sm"
+                >
+                  Faucet
+                </Button>
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Address</p>

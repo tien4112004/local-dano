@@ -8,6 +8,7 @@ import Send from "./pages/Send";
 import CreateWallet from "./pages/CreateWallet";
 import Tokens from "./pages/Tokens";
 import TransactionHistory from "./pages/TransactionHistory";
+import Faucet from "./pages/Faucet";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -24,6 +25,7 @@ const App = () => (
           <Route path="/create" element={<CreateWallet />} />
           <Route path="/tokens" element={<Tokens />} />
           <Route path="/history" element={<TransactionHistory />} />
+          <Route path="/faucet" element={<Faucet />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </HashRouter>
