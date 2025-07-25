@@ -18,7 +18,10 @@ interface WalletListProps {
   selectedWalletId?: string;
 }
 
-export const WalletList = ({ onWalletSelect, selectedWalletId }: WalletListProps) => {
+export const WalletList = ({
+  onWalletSelect,
+  selectedWalletId,
+}: WalletListProps) => {
   const [wallets, setWallets] = useState<Wallet[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
@@ -29,9 +32,9 @@ export const WalletList = ({ onWalletSelect, selectedWalletId }: WalletListProps
 
   const fetchWallets = async () => {
     try {
-      const response = await fetch('http://172.16.61.201:8090/v2/wallets');
+      const response = await fetch("https://172.16.61.201:8090/v2/wallets");
       if (!response.ok) {
-        throw new Error('Failed to fetch wallets');
+        throw new Error("Failed to fetch wallets");
       }
       const data = await response.json();
       setWallets(data);
@@ -39,9 +42,9 @@ export const WalletList = ({ onWalletSelect, selectedWalletId }: WalletListProps
       toast({
         title: "Error",
         description: "Failed to fetch wallets",
-        variant: "destructive"
+        variant: "destructive",
       });
-      console.error('Error fetching wallets:', error);
+      console.error("Error fetching wallets:", error);
     } finally {
       setIsLoading(false);
     }
@@ -82,7 +85,9 @@ export const WalletList = ({ onWalletSelect, selectedWalletId }: WalletListProps
                 key={wallet.id}
                 onClick={() => onWalletSelect(wallet)}
                 className={`p-3 rounded-lg border cursor-pointer transition-colors hover:bg-accent ${
-                  selectedWalletId === wallet.id ? 'bg-accent border-primary' : 'bg-background'
+                  selectedWalletId === wallet.id
+                    ? "bg-accent border-primary"
+                    : "bg-background"
                 }`}
               >
                 <div className="flex justify-between items-center">
@@ -94,7 +99,10 @@ export const WalletList = ({ onWalletSelect, selectedWalletId }: WalletListProps
                   </div>
                   <div className="text-right">
                     <p className="font-medium">
-                      {formatBalance(wallet.balance.total.quantity, wallet.balance.total.unit)}
+                      {formatBalance(
+                        wallet.balance.total.quantity,
+                        wallet.balance.total.unit
+                      )}
                     </p>
                   </div>
                 </div>
