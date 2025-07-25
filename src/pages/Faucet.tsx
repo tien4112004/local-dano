@@ -81,8 +81,10 @@ const Faucet = () => {
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <Label className="text-sm text-muted-foreground">Wallet Address</Label>
-              <div className="text-sm font-mono bg-muted p-2 rounded mt-1">
+              <Label className="text-sm text-muted-foreground">
+                Wallet Address
+              </Label>
+              <div className="text-sm font-mono bg-muted p-2 rounded mt-1 break-all whitespace-pre-wrap">
                 {walletAddress || "No wallet selected"}
               </div>
             </div>

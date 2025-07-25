@@ -12,12 +12,18 @@ interface WalletHeaderProps {
   selectedWalletId?: string;
 }
 
-export const WalletHeader = ({ address, balance, networkId, hasSelectedWallet, selectedWalletId }: WalletHeaderProps) => {
+export const WalletHeader = ({
+  address,
+  balance,
+  networkId,
+  hasSelectedWallet,
+  selectedWalletId,
+}: WalletHeaderProps) => {
   const navigate = useNavigate();
 
   const openInTab = () => {
-    if (typeof chrome !== 'undefined' && chrome.tabs) {
-      chrome.tabs.create({ url: chrome.runtime.getURL('index.html') });
+    if (typeof chrome !== "undefined" && chrome.tabs) {
+      chrome.tabs.create({ url: chrome.runtime.getURL("index.html") });
     }
   };
 
@@ -36,9 +42,9 @@ export const WalletHeader = ({ address, balance, networkId, hasSelectedWallet, s
         <CardTitle className="flex items-center justify-between">
           <span>LocalDano Wallet</span>
           <div className="flex items-center gap-2">
-            <Button 
-              variant="ghost" 
-              size="sm" 
+            <Button
+              variant="ghost"
+              size="sm"
               onClick={openInTab}
               className="h-6 w-6 p-0"
             >
@@ -57,11 +63,13 @@ export const WalletHeader = ({ address, balance, networkId, hasSelectedWallet, s
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">Balance</p>
-                  <p className="text-2xl font-bold">{formatBalance(balance!)}</p>
+                  <p className="text-2xl font-bold">
+                    {formatBalance(balance!)}
+                  </p>
                 </div>
-                <Button 
-                  onClick={() => navigate('/faucet', { state: { address } })} 
-                  variant="outline" 
+                <Button
+                  onClick={() => navigate("/faucet", { state: { address } })}
+                  variant="outline"
                   size="sm"
                 >
                   Faucet
@@ -83,16 +91,32 @@ export const WalletHeader = ({ address, balance, networkId, hasSelectedWallet, s
             </div>
           )}
           <div className="grid grid-cols-2 gap-2 mt-4">
-            <Button onClick={() => navigate('/create')} variant="outline" size="sm">
+            <Button
+              onClick={() => navigate("/create")}
+              variant="outline"
+              size="sm"
+            >
               Create
             </Button>
-            <Button onClick={() => navigate('/send')} variant="outline" size="sm">
+            <Button
+              onClick={() => navigate("/send")}
+              variant="outline"
+              size="sm"
+            >
               Send
             </Button>
-            <Button onClick={() => navigate('/tokens')} variant="outline" size="sm">
+            <Button
+              onClick={() => navigate("/tokens")}
+              variant="outline"
+              size="sm"
+            >
               Tokens
             </Button>
-            <Button onClick={() => navigate('/history')} variant="outline" size="sm">
+            <Button
+              onClick={() => navigate("/history")}
+              variant="outline"
+              size="sm"
+            >
               History
             </Button>
           </div>
