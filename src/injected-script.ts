@@ -13,17 +13,16 @@ interface CardanoFullAPI {
   getExtensions(): Promise<Array<string>>;
 }
 
-interface LocalDanoAPI {
+interface LocalDanoInitialAPI {
   enable(): Promise<CardanoFullAPI>;
   isEnabled(): boolean;
   name: string;
 }
 
-// Mock implementation of CardanoFullAPI
 class LocalDanoWallet implements CardanoFullAPI {
   async getBalance(): Promise<string> {
     // Get balance from selected wallet or fallback to mock
-    const selectedWalletId = (window as any).selectedWalletId;
+    const selectedWalletId = window.selectedWalletId;
     if (selectedWalletId) {
       // In a real implementation, you would fetch the actual balance
       // For now, return mock balance
@@ -60,22 +59,15 @@ class LocalDanoWallet implements CardanoFullAPI {
   }
 
   async getUsedAddresses(pagination: { page: number; limit: number }): Promise<Array<string>> {
-    // Mock used addresses
-    return [
-      "addr1qx2fxv2umyhttkxyxp8x0dlpdt3k6cwng5pxj3jhsydzer3jcu5d8ps7zex2k2xt3uqxgjqnnj0vs2qd4a2ksq8t4cqg2jk5z8",
-      "addr1qy1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef12"
-    ].slice((pagination.page - 1) * pagination.limit, pagination.page * pagination.limit);
+    return [window.selectedAddress]
   }
 
   async getNetworkId(): Promise<number> {
-    // Return testnet (0) or mainnet (1)
-    return 1; // mainnet
+    return 0; // Actually "Localnet" - but set to 0 to pass Kotlin's networkID check
   }
 
   async signData(address: string, payload: string): Promise<string> {
-    // Mock data signing
-    console.log('Signing data:', { address, payload });
-    return "signed_" + payload;
+    throw new Error('Not implemented');
   }
 
   async getExtensions(): Promise<Array<string>> {
@@ -83,13 +75,10 @@ class LocalDanoWallet implements CardanoFullAPI {
   }
 }
 
-// LocalDano API implementation
-const localDanoAPI: LocalDanoAPI = {
+const localDanoInitialPI: LocalDanoInitialAPI = {
   name: "LocalDano",
   
   async enable(): Promise<CardanoFullAPI> {
-    // In a real implementation, this would show a connection prompt
-    console.log('LocalDano wallet enabled');
     return new LocalDanoWallet();
   },
 
@@ -98,11 +87,10 @@ const localDanoAPI: LocalDanoAPI = {
   }
 };
 
-// Inject into window.cardano
 if (!window.cardano) {
   window.cardano = {};
 }
 
-window.cardano.localDano = localDanoAPI;
+window.cardano.localDano = localDanoInitialPI;
 
 console.log('LocalDano wallet injected successfully');
