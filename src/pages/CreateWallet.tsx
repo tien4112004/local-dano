@@ -28,17 +28,31 @@ const CreateWallet = () => {
 
     setIsLoading(true);
     try {
-      // TODO: Implement wallet creation logic
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      const response = await fetch('http://172.16.61.201:8090/v2/wallets', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: walletName,
+          mnemonic_sentence: mnemonic,
+          passphrase: passphrase
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to create wallet');
+      }
+
+      const result = await response.json();
       
       toast({
         title: "Wallet Created",
         description: `Successfully created wallet: ${walletName}`,
       });
       
-      setMnemonic("");
-      setWalletName("");
-      setPassphrase("");
+      // Navigate back to main page
+      navigate('/');
     } catch (error) {
       toast({
         title: "Error",

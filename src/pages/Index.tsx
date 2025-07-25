@@ -44,9 +44,10 @@ const Index = () => {
     <div className="min-h-screen p-4 bg-background">
       <div className="max-w-md mx-auto space-y-4">
         <WalletHeader 
-          address={walletData.address}
-          balance={walletData.balance}
+          address={selectedWallet ? walletData.address : undefined}
+          balance={selectedWallet ? walletData.balance : undefined}
           networkId={walletData.networkId}
+          hasSelectedWallet={!!selectedWallet}
         />
         <WalletList 
           onWalletSelect={handleWalletSelect}

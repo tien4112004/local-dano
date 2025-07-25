@@ -5,12 +5,13 @@ import { ExternalLink } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 interface WalletHeaderProps {
-  address: string;
-  balance: string;
+  address?: string;
+  balance?: string;
   networkId: number;
+  hasSelectedWallet: boolean;
 }
 
-export const WalletHeader = ({ address, balance, networkId }: WalletHeaderProps) => {
+export const WalletHeader = ({ address, balance, networkId, hasSelectedWallet }: WalletHeaderProps) => {
   const navigate = useNavigate();
 
   const openInTab = () => {
@@ -50,16 +51,27 @@ export const WalletHeader = ({ address, balance, networkId }: WalletHeaderProps)
       </CardHeader>
       <CardContent>
         <div className="space-y-3">
-          <div>
-            <p className="text-sm text-muted-foreground">Balance</p>
-            <p className="text-2xl font-bold">{formatBalance(balance)}</p>
-          </div>
-          <div>
-            <p className="text-sm text-muted-foreground">Address</p>
-            <p className="text-sm font-mono bg-muted p-2 rounded">
-              {formatAddress(address)}
-            </p>
-          </div>
+          {hasSelectedWallet ? (
+            <>
+              <div>
+                <p className="text-sm text-muted-foreground">Balance</p>
+                <p className="text-2xl font-bold">{formatBalance(balance!)}</p>
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Address</p>
+                <p className="text-sm font-mono bg-muted p-2 rounded">
+                  {formatAddress(address!)}
+                </p>
+              </div>
+            </>
+          ) : (
+            <div className="text-center py-6">
+              <p className="text-muted-foreground">No wallet selected</p>
+              <p className="text-sm text-muted-foreground mt-1">
+                Select a wallet from the list below or create a new one
+              </p>
+            </div>
+          )}
           <div className="grid grid-cols-2 gap-2 mt-4">
             <Button onClick={() => navigate('/create')} variant="outline" size="sm">
               Create
