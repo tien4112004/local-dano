@@ -19,4 +19,23 @@ export default defineConfig(({ mode }) => ({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  build: {
+    rollupOptions: {
+      input: {
+        main: path.resolve(__dirname, "index.html"),
+        "content-script": path.resolve(__dirname, "src/content-script.ts"),
+        "injected-script": path.resolve(__dirname, "src/injected-script.ts"),
+        "background": path.resolve(__dirname, "src/background.ts"),
+      },
+      output: {
+        entryFileNames: (chunkInfo) => {
+          const specialFiles = ["content-script", "injected-script", "background"];
+          if (specialFiles.includes(chunkInfo.name)) {
+            return `${chunkInfo.name}.js`;
+          }
+          return "assets/[name]-[hash].js";
+        },
+      },
+    },
+  },
 }));
