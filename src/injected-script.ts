@@ -22,7 +22,13 @@ interface LocalDanoAPI {
 // Mock implementation of CardanoFullAPI
 class LocalDanoWallet implements CardanoFullAPI {
   async getBalance(): Promise<string> {
-    // Mock balance in lovelace (ADA smallest unit)
+    // Get balance from selected wallet or fallback to mock
+    const selectedWalletId = (window as any).selectedWalletId;
+    if (selectedWalletId) {
+      // In a real implementation, you would fetch the actual balance
+      // For now, return mock balance
+      return "1000000000"; // 1000 ADA
+    }
     return "1000000000"; // 1000 ADA
   }
 

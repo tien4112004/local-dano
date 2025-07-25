@@ -1,5 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
 
 interface WalletHeaderProps {
   address: string;
@@ -8,6 +10,8 @@ interface WalletHeaderProps {
 }
 
 export const WalletHeader = ({ address, balance, networkId }: WalletHeaderProps) => {
+  const navigate = useNavigate();
+
   const formatBalance = (lovelace: string) => {
     const ada = (parseInt(lovelace) / 1000000).toFixed(2);
     return `${ada} ADA`;
@@ -38,6 +42,20 @@ export const WalletHeader = ({ address, balance, networkId }: WalletHeaderProps)
             <p className="text-sm font-mono bg-muted p-2 rounded">
               {formatAddress(address)}
             </p>
+          </div>
+          <div className="grid grid-cols-2 gap-2 mt-4">
+            <Button onClick={() => navigate('/create')} variant="outline" size="sm">
+              Create
+            </Button>
+            <Button onClick={() => navigate('/send')} variant="outline" size="sm">
+              Send
+            </Button>
+            <Button onClick={() => navigate('/tokens')} variant="outline" size="sm">
+              Tokens
+            </Button>
+            <Button onClick={() => navigate('/history')} variant="outline" size="sm">
+              History
+            </Button>
           </div>
         </div>
       </CardContent>
