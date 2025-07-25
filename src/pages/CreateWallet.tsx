@@ -21,43 +21,43 @@ const CreateWallet = () => {
       toast({
         title: "Error",
         description: "Please fill in required fields",
-        variant: "destructive"
+        variant: "destructive",
       });
       return;
     }
-
+    console.log(mnemonic.split(" "));
     setIsLoading(true);
     try {
-      const response = await fetch('http://172.16.61.201:8090/v2/wallets', {
-        method: 'POST',
+      const response = await fetch("http://172.16.61.201:8090/v2/wallets", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           name: walletName,
-          mnemonic_sentence: mnemonic,
-          passphrase: passphrase
+          mnemonic_sentence: mnemonic.split(" "),
+          passphrase: passphrase,
         }),
       });
 
       if (!response.ok) {
-        throw new Error('Failed to create wallet');
+        throw new Error("Failed to create wallet");
       }
 
       const result = await response.json();
-      
+
       toast({
         title: "Wallet Created",
         description: `Successfully created wallet: ${walletName}`,
       });
-      
+
       // Navigate back to main page
-      navigate('/');
+      navigate("/");
     } catch (error) {
       toast({
         title: "Error",
         description: "Failed to create wallet",
-        variant: "destructive"
+        variant: "destructive",
       });
     } finally {
       setIsLoading(false);
@@ -67,10 +67,10 @@ const CreateWallet = () => {
   return (
     <div className="min-h-screen p-4 bg-background">
       <div className="max-w-md mx-auto space-y-4">
-        <Button 
-          variant="ghost" 
-          size="sm" 
-          onClick={() => navigate('/')}
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => navigate("/")}
           className="flex items-center gap-2"
         >
           <ArrowLeft className="h-4 w-4" />
@@ -110,8 +110,8 @@ const CreateWallet = () => {
                 onChange={(e) => setPassphrase(e.target.value)}
               />
             </div>
-            <Button 
-              onClick={handleSubmit} 
+            <Button
+              onClick={handleSubmit}
               disabled={isLoading}
               className="w-full"
             >
