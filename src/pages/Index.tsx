@@ -7,6 +7,8 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Separator } from "@/components/ui/separator";
+import { Loader2, X } from "lucide-react";
 import { LocalDanoWallet } from "@/shared/wallet";
 
 interface Wallet {
@@ -29,6 +31,7 @@ const Index = () => {
   });
   const [devMode, setDevMode] = useState(false);
   const [devResults, setDevResults] = useState<Record<string, any>>({});
+  const [devLoading, setDevLoading] = useState<Record<string, boolean>>({});
   const [devInputs, setDevInputs] = useState<Record<string, any>>({
     signTx: { tx: "", partialSign: false },
     submitTx: { transaction: "" },
@@ -84,6 +87,7 @@ const Index = () => {
   };
 
   const callWalletFunction = async (functionName: string) => {
+    setDevLoading((prev) => ({ ...prev, [functionName]: true }));
     try {
       const wallet = new LocalDanoWallet();
       let result;
@@ -132,7 +136,17 @@ const Index = () => {
         ...prev,
         [functionName]: `Error: ${error.message}`,
       }));
+    } finally {
+      setDevLoading((prev) => ({ ...prev, [functionName]: false }));
     }
+  };
+
+  const hideResult = (functionName: string) => {
+    setDevResults((prev) => {
+      const newResults = { ...prev };
+      delete newResults[functionName];
+      return newResults;
+    });
   };
 
   const updateDevInput = (functionName: string, field: string, value: any) => {
@@ -181,23 +195,43 @@ const Index = () => {
                 "getCollaterals",
                 "getNetworkId",
                 "getExtensions",
-              ].map((func) => (
-                <div key={func} className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <Label className="font-medium">{func}()</Label>
-                    <Button size="sm" onClick={() => callWalletFunction(func)}>
-                      Call
-                    </Button>
-                  </div>
-                  {devResults[func] && (
-                    <div className="p-2 bg-muted rounded text-sm font-mono">
-                      {typeof devResults[func] === "object"
-                        ? JSON.stringify(devResults[func], null, 2)
-                        : String(devResults[func])}
+              ].map((func, index) => (
+                <div key={func}>
+                  {index > 0 && <Separator className="my-4" />}
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <Label className="font-medium">{func}()</Label>
+                      <Button 
+                        size="sm" 
+                        onClick={() => callWalletFunction(func)}
+                        disabled={devLoading[func]}
+                      >
+                        {devLoading[func] && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+                        Call
+                      </Button>
                     </div>
-                  )}
+                    {devResults[func] && (
+                      <div className="relative p-2 bg-muted rounded text-sm font-mono">
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="absolute top-1 right-1 h-6 w-6 p-0"
+                          onClick={() => hideResult(func)}
+                        >
+                          <X className="w-3 h-3" />
+                        </Button>
+                        <div className="pr-8">
+                          {typeof devResults[func] === "object"
+                            ? JSON.stringify(devResults[func], null, 2)
+                            : String(devResults[func])}
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
               ))}
+
+              <Separator className="my-4" />
 
               {/* signTx function */}
               <div className="space-y-2">
@@ -219,15 +253,32 @@ const Index = () => {
                   />
                   <Label htmlFor="partial-sign">Partial Sign</Label>
                 </div>
-                <Button size="sm" onClick={() => callWalletFunction("signTx")}>
+                <Button 
+                  size="sm" 
+                  onClick={() => callWalletFunction("signTx")}
+                  disabled={devLoading.signTx}
+                >
+                  {devLoading.signTx && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
                   Call
                 </Button>
                 {devResults.signTx && (
-                  <div className="p-2 bg-muted rounded text-sm font-mono">
-                    {String(devResults.signTx)}
+                  <div className="relative p-2 bg-muted rounded text-sm font-mono">
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="absolute top-1 right-1 h-6 w-6 p-0"
+                      onClick={() => hideResult("signTx")}
+                    >
+                      <X className="w-3 h-3" />
+                    </Button>
+                    <div className="pr-8">
+                      {String(devResults.signTx)}
+                    </div>
                   </div>
                 )}
               </div>
+
+              <Separator className="my-4" />
 
               {/* submitTx function */}
               <div className="space-y-2">
@@ -242,15 +293,29 @@ const Index = () => {
                 <Button
                   size="sm"
                   onClick={() => callWalletFunction("submitTx")}
+                  disabled={devLoading.submitTx}
                 >
+                  {devLoading.submitTx && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
                   Call
                 </Button>
                 {devResults.submitTx && (
-                  <div className="p-2 bg-muted rounded text-sm font-mono">
-                    {String(devResults.submitTx)}
+                  <div className="relative p-2 bg-muted rounded text-sm font-mono">
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="absolute top-1 right-1 h-6 w-6 p-0"
+                      onClick={() => hideResult("submitTx")}
+                    >
+                      <X className="w-3 h-3" />
+                    </Button>
+                    <div className="pr-8">
+                      {String(devResults.submitTx)}
+                    </div>
                   </div>
                 )}
               </div>
+
+              <Separator className="my-4" />
 
               {/* getUsedAddresses function */}
               <div className="space-y-2">
@@ -286,15 +351,29 @@ const Index = () => {
                 <Button
                   size="sm"
                   onClick={() => callWalletFunction("getUsedAddresses")}
+                  disabled={devLoading.getUsedAddresses}
                 >
+                  {devLoading.getUsedAddresses && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
                   Call
                 </Button>
                 {devResults.getUsedAddresses && (
-                  <div className="p-2 bg-muted rounded text-sm font-mono">
-                    {JSON.stringify(devResults.getUsedAddresses, null, 2)}
+                  <div className="relative p-2 bg-muted rounded text-sm font-mono">
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="absolute top-1 right-1 h-6 w-6 p-0"
+                      onClick={() => hideResult("getUsedAddresses")}
+                    >
+                      <X className="w-3 h-3" />
+                    </Button>
+                    <div className="pr-8">
+                      {JSON.stringify(devResults.getUsedAddresses, null, 2)}
+                    </div>
                   </div>
                 )}
               </div>
+
+              <Separator className="my-4" />
 
               {/* signData function */}
               <div className="space-y-2">
@@ -318,12 +397,24 @@ const Index = () => {
                 <Button
                   size="sm"
                   onClick={() => callWalletFunction("signData")}
+                  disabled={devLoading.signData}
                 >
+                  {devLoading.signData && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
                   Call
                 </Button>
                 {devResults.signData && (
-                  <div className="p-2 bg-muted rounded text-sm font-mono">
-                    {String(devResults.signData)}
+                  <div className="relative p-2 bg-muted rounded text-sm font-mono">
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="absolute top-1 right-1 h-6 w-6 p-0"
+                      onClick={() => hideResult("signData")}
+                    >
+                      <X className="w-3 h-3" />
+                    </Button>
+                    <div className="pr-8">
+                      {String(devResults.signData)}
+                    </div>
                   </div>
                 )}
               </div>
