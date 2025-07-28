@@ -41,7 +41,10 @@ const Index = () => {
 
     // Store selected wallet for injected script access and fetch address
     if (selectedWallet) {
-      (window as any).selectedWalletId = selectedWallet.id;
+      chrome.runtime.sendMessage({
+        type: "SET_SELECTED_WALLET_ID",
+        walletId: selectedWallet.id,
+      });
 
       // Fetch wallet addresses
       const fetchWalletAddress = async () => {

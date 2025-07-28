@@ -1,5 +1,17 @@
 // This script runs in the page context, not extension context
 // So we can't import modules, we need to define types inline
+import { encode } from "cbor2";
+
+window.addEventListener("message", (event) => {
+  if (event.source !== window) return;
+  if (event.data?.type === "LOCALDANO_SET_WALLET_ID") {
+    window.selectedWalletId = event.data.walletId;
+    console.log(
+      "Injected script set selectedWalletId:",
+      window.selectedWalletId
+    );
+  }
+});
 
 interface CardanoFullAPI {
   getBalance(): Promise<string>;
@@ -7,7 +19,10 @@ interface CardanoFullAPI {
   getCollaterals(): Promise<Array<string> | null>;
   signTx(tx: string, partialSign: boolean): Promise<string>;
   submitTx(transaction: string): Promise<string>;
-  getUsedAddresses(pagination: { page: number; limit: number }): Promise<Array<string>>;
+  getUsedAddresses(pagination: {
+    page: number;
+    limit: number;
+  }): Promise<Array<string>>;
   getNetworkId(): Promise<number>;
   signData(address: string, payload: string): Promise<string>;
   getExtensions(): Promise<Array<string>>;
@@ -19,47 +34,94 @@ interface LocalDanoInitialAPI {
   name: string;
 }
 
+const uint8ArrayToHex = (array: Uint8Array): string => {
+  return Array.from(array)
+    .map((byte) => byte.toString(16).padStart(2, "0"))
+    .join("");
+};
+
+const hexToBytes = (hex: string): Uint8Array => {
+  if (hex.length % 2 !== 0) throw new Error("Invalid hex string");
+  const bytes = new Uint8Array(hex.length / 2);
+  for (let i = 0; i < hex.length; i += 2) {
+    bytes[i / 2] = parseInt(hex.slice(i, i + 2), 16);
+  }
+  return bytes;
+};
+
 class LocalDanoWallet implements CardanoFullAPI {
   async getBalance(): Promise<string> {
-    // Get balance from selected wallet or fallback to mock
-    const selectedWalletId = window.selectedWalletId;
-    if (selectedWalletId) {
-      // In a real implementation, you would fetch the actual balance
-      // For now, return mock balance
-      return "1000000000"; // 1000 ADA
+    const walletId = window.selectedWalletId;
+    const response = await fetch(
+      `http://172.16.61.201:8090/v2/wallets/${walletId}`
+    );
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch wallet: ${response.status}`);
     }
-    return "1000000000"; // 1000 ADA
+
+    const data = await response.json();
+
+    const lovelaceAmount: number = data.balance.total.quantity;
+
+    const assetMap = new Map<Uint8Array, Map<Uint8Array, number>>();
+
+    for (const asset of data.assets.total) {
+      const policyId = asset.policy_id;
+      const assetName = asset.asset_name || "";
+      const quantity = asset.quantity;
+
+      const policyKey = hexToBytes(policyId);
+      const assetKey = hexToBytes(assetName);
+
+      if (!assetMap.has(policyKey)) {
+        assetMap.set(policyKey, new Map());
+      }
+
+      const childMap = assetMap.get(policyKey)!;
+      childMap.set(assetKey, quantity);
+    }
+
+    const objectToEncode: [number, Map<Uint8Array, Map<Uint8Array, number>>] = [
+      lovelaceAmount,
+      assetMap,
+    ];
+
+    return uint8ArrayToHex(encode(objectToEncode));
   }
 
   async getUtxos(): Promise<Array<string>> {
     // Mock UTXOs
     return [
       "82825820a1b2c3d4e5f6789012345678901234567890123456789012345678901234567890123456000",
-      "82825820b2c3d4e5f6789012345678901234567890123456789012345678901234567890123456001"
+      "82825820b2c3d4e5f6789012345678901234567890123456789012345678901234567890123456001",
     ];
   }
 
   async getCollaterals(): Promise<Array<string> | null> {
     // Mock collateral UTXOs
     return [
-      "82825820c3d4e5f6789012345678901234567890123456789012345678901234567890123456002"
+      "82825820c3d4e5f6789012345678901234567890123456789012345678901234567890123456002",
     ];
   }
 
   async signTx(tx: string, partialSign: boolean): Promise<string> {
     // Mock transaction signing
-    console.log('Signing transaction:', { tx, partialSign });
+    console.log("Signing transaction:", { tx, partialSign });
     return tx + "_signed";
   }
 
   async submitTx(transaction: string): Promise<string> {
     // Mock transaction submission
-    console.log('Submitting transaction:', transaction);
+    console.log("Submitting transaction:", transaction);
     return "a1b2c3d4e5f6789012345678901234567890123456789012345678901234567890";
   }
 
-  async getUsedAddresses(pagination: { page: number; limit: number }): Promise<Array<string>> {
-    return [window.selectedAddress]
+  async getUsedAddresses(pagination: {
+    page: number;
+    limit: number;
+  }): Promise<Array<string>> {
+    return [window.selectedAddress];
   }
 
   async getNetworkId(): Promise<number> {
@@ -67,7 +129,7 @@ class LocalDanoWallet implements CardanoFullAPI {
   }
 
   async signData(address: string, payload: string): Promise<string> {
-    throw new Error('Not implemented');
+    throw new Error("Not implemented");
   }
 
   async getExtensions(): Promise<Array<string>> {
@@ -77,14 +139,14 @@ class LocalDanoWallet implements CardanoFullAPI {
 
 const localDanoInitialPI: LocalDanoInitialAPI = {
   name: "LocalDano",
-  
+
   async enable(): Promise<CardanoFullAPI> {
     return new LocalDanoWallet();
   },
 
   isEnabled(): boolean {
     return true;
-  }
+  },
 };
 
 if (!window.cardano) {
@@ -93,4 +155,4 @@ if (!window.cardano) {
 
 window.cardano.localDano = localDanoInitialPI;
 
-console.log('LocalDano wallet injected successfully');
+console.log("LocalDano wallet injected successfully");
