@@ -9,11 +9,9 @@ export default defineConfig(({ mode }) => ({
     host: "::",
     port: 8080,
   },
-  plugins: [
-    react(),
-    mode === 'development' &&
-    componentTagger(),
-  ].filter(Boolean),
+  plugins: [react(), mode === "development" && componentTagger()].filter(
+    Boolean
+  ),
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
@@ -24,12 +22,16 @@ export default defineConfig(({ mode }) => ({
       input: {
         main: path.resolve(__dirname, "index.html"),
         "content-script": path.resolve(__dirname, "src/content-script.ts"),
-        "injected-script": path.resolve(__dirname, "src/injected-script.ts"),
-        "background": path.resolve(__dirname, "src/background.ts"),
+        // "injected-script": path.resolve(__dirname, "src/injected-script.ts"),
+        background: path.resolve(__dirname, "src/background.ts"),
       },
       output: {
         entryFileNames: (chunkInfo) => {
-          const specialFiles = ["content-script", "injected-script", "background"];
+          const specialFiles = [
+            "content-script",
+            "injected-script",
+            "background",
+          ];
           if (specialFiles.includes(chunkInfo.name)) {
             return `${chunkInfo.name}.js`;
           }

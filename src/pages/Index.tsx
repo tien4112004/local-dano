@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
+import { LocalDanoWallet } from "@/shared/wallet";
 
 interface Wallet {
   id: string;
@@ -32,7 +33,7 @@ const Index = () => {
     signTx: { tx: "", partialSign: false },
     submitTx: { transaction: "" },
     getUsedAddresses: { page: 1, limit: 10 },
-    signData: { address: "", payload: "" }
+    signData: { address: "", payload: "" },
   });
 
   useEffect(() => {
@@ -41,10 +42,12 @@ const Index = () => {
 
     // Store selected wallet for injected script access and fetch address
     if (selectedWallet) {
+      console.log("Saving wallets");
       chrome.runtime.sendMessage({
         type: "SET_SELECTED_WALLET_ID",
         walletId: selectedWallet.id,
       });
+      window.selectedWalletId = selectedWallet.id;
 
       // Fetch wallet addresses
       const fetchWalletAddress = async () => {
@@ -82,56 +85,60 @@ const Index = () => {
 
   const callWalletFunction = async (functionName: string) => {
     try {
-      const cardano = (window as any).cardano;
-      if (!cardano?.localDano) {
-        throw new Error('LocalDano wallet not available');
-      }
-
-      const wallet = await cardano.localDano.enable();
+      const wallet = new LocalDanoWallet();
       let result;
 
       switch (functionName) {
-        case 'getBalance':
+        case "getBalance":
           result = await wallet.getBalance();
           break;
-        case 'getUtxos':
+        case "getUtxos":
           result = await wallet.getUtxos();
           break;
-        case 'getCollaterals':
+        case "getCollaterals":
           result = await wallet.getCollaterals();
           break;
-        case 'getNetworkId':
+        case "getNetworkId":
           result = await wallet.getNetworkId();
           break;
-        case 'getExtensions':
+        case "getExtensions":
           result = await wallet.getExtensions();
           break;
-        case 'signTx':
-          result = await wallet.signTx(devInputs.signTx.tx, devInputs.signTx.partialSign);
+        case "signTx":
+          result = await wallet.signTx(
+            devInputs.signTx.tx,
+            devInputs.signTx.partialSign
+          );
           break;
-        case 'submitTx':
+        case "submitTx":
           result = await wallet.submitTx(devInputs.submitTx.transaction);
           break;
-        case 'getUsedAddresses':
+        case "getUsedAddresses":
           result = await wallet.getUsedAddresses(devInputs.getUsedAddresses);
           break;
-        case 'signData':
-          result = await wallet.signData(devInputs.signData.address, devInputs.signData.payload);
+        case "signData":
+          result = await wallet.signData(
+            devInputs.signData.address,
+            devInputs.signData.payload
+          );
           break;
         default:
           throw new Error(`Unknown function: ${functionName}`);
       }
 
-      setDevResults(prev => ({ ...prev, [functionName]: result }));
+      setDevResults((prev) => ({ ...prev, [functionName]: result }));
     } catch (error) {
-      setDevResults(prev => ({ ...prev, [functionName]: `Error: ${error.message}` }));
+      setDevResults((prev) => ({
+        ...prev,
+        [functionName]: `Error: ${error.message}`,
+      }));
     }
   };
 
   const updateDevInput = (functionName: string, field: string, value: any) => {
-    setDevInputs(prev => ({
+    setDevInputs((prev) => ({
       ...prev,
-      [functionName]: { ...prev[functionName], [field]: value }
+      [functionName]: { ...prev[functionName], [field]: value },
     }));
   };
 
@@ -149,7 +156,7 @@ const Index = () => {
           onWalletSelect={handleWalletSelect}
           selectedWalletId={selectedWallet?.id}
         />
-        
+
         {/* Dev Mode Toggle */}
         <div className="flex items-center space-x-2 p-3 border rounded-lg">
           <Switch
@@ -168,7 +175,13 @@ const Index = () => {
             </CardHeader>
             <CardContent className="space-y-4">
               {/* Functions without parameters */}
-              {['getBalance', 'getUtxos', 'getCollaterals', 'getNetworkId', 'getExtensions'].map(func => (
+              {[
+                "getBalance",
+                "getUtxos",
+                "getCollaterals",
+                "getNetworkId",
+                "getExtensions",
+              ].map((func) => (
                 <div key={func} className="space-y-2">
                   <div className="flex items-center justify-between">
                     <Label className="font-medium">{func}()</Label>
@@ -178,7 +191,7 @@ const Index = () => {
                   </div>
                   {devResults[func] && (
                     <div className="p-2 bg-muted rounded text-sm font-mono">
-                      {typeof devResults[func] === 'object' 
+                      {typeof devResults[func] === "object"
                         ? JSON.stringify(devResults[func], null, 2)
                         : String(devResults[func])}
                     </div>
@@ -192,17 +205,21 @@ const Index = () => {
                 <Input
                   placeholder="Transaction hex"
                   value={devInputs.signTx.tx}
-                  onChange={(e) => updateDevInput('signTx', 'tx', e.target.value)}
+                  onChange={(e) =>
+                    updateDevInput("signTx", "tx", e.target.value)
+                  }
                 />
                 <div className="flex items-center space-x-2">
                   <Checkbox
                     id="partial-sign"
                     checked={devInputs.signTx.partialSign}
-                    onCheckedChange={(checked) => updateDevInput('signTx', 'partialSign', checked)}
+                    onCheckedChange={(checked) =>
+                      updateDevInput("signTx", "partialSign", checked)
+                    }
                   />
                   <Label htmlFor="partial-sign">Partial Sign</Label>
                 </div>
-                <Button size="sm" onClick={() => callWalletFunction('signTx')}>
+                <Button size="sm" onClick={() => callWalletFunction("signTx")}>
                   Call
                 </Button>
                 {devResults.signTx && (
@@ -218,9 +235,14 @@ const Index = () => {
                 <Input
                   placeholder="Transaction hex"
                   value={devInputs.submitTx.transaction}
-                  onChange={(e) => updateDevInput('submitTx', 'transaction', e.target.value)}
+                  onChange={(e) =>
+                    updateDevInput("submitTx", "transaction", e.target.value)
+                  }
                 />
-                <Button size="sm" onClick={() => callWalletFunction('submitTx')}>
+                <Button
+                  size="sm"
+                  onClick={() => callWalletFunction("submitTx")}
+                >
                   Call
                 </Button>
                 {devResults.submitTx && (
@@ -232,22 +254,39 @@ const Index = () => {
 
               {/* getUsedAddresses function */}
               <div className="space-y-2">
-                <Label className="font-medium">getUsedAddresses(pagination)</Label>
+                <Label className="font-medium">
+                  getUsedAddresses(pagination)
+                </Label>
                 <div className="grid grid-cols-2 gap-2">
                   <Input
                     type="number"
                     placeholder="Page"
                     value={devInputs.getUsedAddresses.page}
-                    onChange={(e) => updateDevInput('getUsedAddresses', 'page', parseInt(e.target.value) || 1)}
+                    onChange={(e) =>
+                      updateDevInput(
+                        "getUsedAddresses",
+                        "page",
+                        parseInt(e.target.value) || 1
+                      )
+                    }
                   />
                   <Input
                     type="number"
                     placeholder="Limit"
                     value={devInputs.getUsedAddresses.limit}
-                    onChange={(e) => updateDevInput('getUsedAddresses', 'limit', parseInt(e.target.value) || 10)}
+                    onChange={(e) =>
+                      updateDevInput(
+                        "getUsedAddresses",
+                        "limit",
+                        parseInt(e.target.value) || 10
+                      )
+                    }
                   />
                 </div>
-                <Button size="sm" onClick={() => callWalletFunction('getUsedAddresses')}>
+                <Button
+                  size="sm"
+                  onClick={() => callWalletFunction("getUsedAddresses")}
+                >
                   Call
                 </Button>
                 {devResults.getUsedAddresses && (
@@ -259,18 +298,27 @@ const Index = () => {
 
               {/* signData function */}
               <div className="space-y-2">
-                <Label className="font-medium">signData(address, payload)</Label>
+                <Label className="font-medium">
+                  signData(address, payload)
+                </Label>
                 <Input
                   placeholder="Address"
                   value={devInputs.signData.address}
-                  onChange={(e) => updateDevInput('signData', 'address', e.target.value)}
+                  onChange={(e) =>
+                    updateDevInput("signData", "address", e.target.value)
+                  }
                 />
                 <Input
                   placeholder="Payload"
                   value={devInputs.signData.payload}
-                  onChange={(e) => updateDevInput('signData', 'payload', e.target.value)}
+                  onChange={(e) =>
+                    updateDevInput("signData", "payload", e.target.value)
+                  }
                 />
-                <Button size="sm" onClick={() => callWalletFunction('signData')}>
+                <Button
+                  size="sm"
+                  onClick={() => callWalletFunction("signData")}
+                >
                   Call
                 </Button>
                 {devResults.signData && (
