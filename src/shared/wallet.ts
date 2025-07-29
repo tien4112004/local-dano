@@ -215,9 +215,49 @@ export class LocalDanoWallet implements CardanoFullAPI {
   }
 
   async signTx(tx: string, partialSign: boolean): Promise<string> {
-    // Mock transaction signing
-    console.log("Signing transaction:", { tx, partialSign });
-    return tx + "_signed";
+    return new Promise((resolve, reject) => {
+      // Create a promise that will be resolved when the user signs
+      const showPassphraseDialog = () => {
+        // Dispatch event to show passphrase dialog
+        window.dispatchEvent(new CustomEvent('show-passphrase-dialog', {
+          detail: {
+            onSign: async (passphrase: string) => {
+              try {
+                const walletId = window.selectedWalletId;
+                const response = await fetch(
+                  `http://172.16.61.201:3000/wallets/${walletId}/transactions-sign`,
+                  {
+                    method: 'POST',
+                    headers: {
+                      'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                      passphrase,
+                      transaction: tx,
+                      encoding: 'base16'
+                    })
+                  }
+                );
+
+                if (!response.ok) {
+                  throw new Error(`Failed to sign transaction: ${response.status}`);
+                }
+
+                const data = await response.json();
+                resolve(data.transaction);
+              } catch (error) {
+                reject(error);
+              }
+            },
+            onCancel: () => {
+              reject(new Error('Transaction signing cancelled'));
+            }
+          }
+        }));
+      };
+
+      showPassphraseDialog();
+    });
   }
 
   async submitTx(transaction: string): Promise<string> {
