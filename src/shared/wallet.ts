@@ -1,4 +1,5 @@
 import { encode } from "cbor2";
+import { bech32 as bech32lib } from "bech32";
 
 const uint8ArrayToHex = (array: Uint8Array): string => {
   return Array.from(array)
@@ -14,6 +15,14 @@ const hexToBytes = (hex: string): Uint8Array => {
   }
   return bytes;
 };
+
+function bech32ToHex(bech32: string): string {
+  const decoded = bech32lib.decode(bech32, 1000);
+  const bytes = bech32lib.fromWords(decoded.words);
+  return Array.from(bytes)
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+}
 
 export interface CardanoFullAPI {
   getBalance(): Promise<string>;
@@ -72,11 +81,60 @@ export class LocalDanoWallet implements CardanoFullAPI {
   }
 
   async getUtxos(): Promise<Array<string>> {
-    // Mock UTXOs
-    return [
-      "82825820a1b2c3d4e5f6789012345678901234567890123456789012345678901234567890123456000",
-      "82825820b2c3d4e5f6789012345678901234567890123456789012345678901234567890123456001",
-    ];
+    const address = window.selectedAddress;
+    const response = await fetch(
+      `http://172.16.61.201:3000/addresses/${address}/utxos`
+    );
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch UTXOs: ${response.status}`);
+    }
+
+    const data = await response.json();
+    const results: string[] = [];
+
+    for (const utxo of data) {
+      const txHashBytes = hexToBytes(utxo.tx_hash);
+      const txIndex = utxo.tx_index;
+
+      // First element: [tx_hash_bytes, tx_index]
+      const firstElement = [txHashBytes, txIndex];
+
+      // Second element:
+      const addressHex = bech32ToHex(utxo.address);
+
+      const amountArray = utxo.amount;
+
+      let lovelaceAmount = "0";
+      const assetMap = new Map<Uint8Array, Map<Uint8Array, number>>();
+
+      for (const amt of amountArray) {
+        if (amt.unit === "lovelace") {
+          lovelaceAmount = amt.quantity;
+        } else {
+          const policyId = amt.unit.slice(0, 56);
+          const assetName = amt.unit.slice(56);
+
+          const policyKey = hexToBytes(policyId);
+          const assetKey = hexToBytes(assetName);
+
+          if (!assetMap.has(policyKey)) {
+            assetMap.set(policyKey, new Map());
+          }
+
+          const innerMap = assetMap.get(policyKey)!;
+          innerMap.set(assetKey, Number(amt.quantity));
+        }
+      }
+
+      const secondElement = [addressHex, [Number(lovelaceAmount), assetMap]];
+
+      const finalObject = [firstElement, secondElement];
+      const encoded = encode(finalObject);
+      results.push(uint8ArrayToHex(encoded));
+    }
+
+    return results;
   }
 
   async getCollaterals(): Promise<Array<string> | null> {

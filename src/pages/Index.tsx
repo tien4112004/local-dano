@@ -40,12 +40,8 @@ const Index = () => {
   });
 
   useEffect(() => {
-    // Initialize wallet data
-    console.log("LocalDano Wallet Extension loaded");
-
     // Store selected wallet for injected script access and fetch address
     if (selectedWallet) {
-      console.log("Saving wallets");
       chrome.runtime.sendMessage({
         type: "SET_SELECTED_WALLET_ID",
         walletId: selectedWallet.id,
@@ -61,6 +57,11 @@ const Index = () => {
           if (response.ok) {
             const addresses = await response.json();
             const address = addresses.length > 0 ? addresses[0].id : "";
+            chrome.runtime.sendMessage({
+              type: "SET_SELECTED_ADDRESS",
+              address: address,
+            });
+            window.selectedAddress = address;
             setWalletData({
               address,
               balance: selectedWallet.balance.total.quantity.toString(),
@@ -201,12 +202,14 @@ const Index = () => {
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
                       <Label className="font-medium">{func}()</Label>
-                      <Button 
-                        size="sm" 
+                      <Button
+                        size="sm"
                         onClick={() => callWalletFunction(func)}
                         disabled={devLoading[func]}
                       >
-                        {devLoading[func] && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+                        {devLoading[func] && (
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        )}
                         Call
                       </Button>
                     </div>
@@ -220,7 +223,7 @@ const Index = () => {
                         >
                           <X className="w-3 h-3" />
                         </Button>
-                        <div className="pr-8">
+                        <div className="pr-8 break-all whitespace-pre-wrap">
                           {typeof devResults[func] === "object"
                             ? JSON.stringify(devResults[func], null, 2)
                             : String(devResults[func])}
@@ -253,12 +256,14 @@ const Index = () => {
                   />
                   <Label htmlFor="partial-sign">Partial Sign</Label>
                 </div>
-                <Button 
-                  size="sm" 
+                <Button
+                  size="sm"
                   onClick={() => callWalletFunction("signTx")}
                   disabled={devLoading.signTx}
                 >
-                  {devLoading.signTx && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+                  {devLoading.signTx && (
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  )}
                   Call
                 </Button>
                 {devResults.signTx && (
@@ -271,9 +276,7 @@ const Index = () => {
                     >
                       <X className="w-3 h-3" />
                     </Button>
-                    <div className="pr-8">
-                      {String(devResults.signTx)}
-                    </div>
+                    <div className="pr-8">{String(devResults.signTx)}</div>
                   </div>
                 )}
               </div>
@@ -295,7 +298,9 @@ const Index = () => {
                   onClick={() => callWalletFunction("submitTx")}
                   disabled={devLoading.submitTx}
                 >
-                  {devLoading.submitTx && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+                  {devLoading.submitTx && (
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  )}
                   Call
                 </Button>
                 {devResults.submitTx && (
@@ -308,9 +313,7 @@ const Index = () => {
                     >
                       <X className="w-3 h-3" />
                     </Button>
-                    <div className="pr-8">
-                      {String(devResults.submitTx)}
-                    </div>
+                    <div className="pr-8">{String(devResults.submitTx)}</div>
                   </div>
                 )}
               </div>
@@ -353,7 +356,9 @@ const Index = () => {
                   onClick={() => callWalletFunction("getUsedAddresses")}
                   disabled={devLoading.getUsedAddresses}
                 >
-                  {devLoading.getUsedAddresses && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+                  {devLoading.getUsedAddresses && (
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  )}
                   Call
                 </Button>
                 {devResults.getUsedAddresses && (
@@ -399,7 +404,9 @@ const Index = () => {
                   onClick={() => callWalletFunction("signData")}
                   disabled={devLoading.signData}
                 >
-                  {devLoading.signData && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+                  {devLoading.signData && (
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  )}
                   Call
                 </Button>
                 {devResults.signData && (
@@ -412,9 +419,7 @@ const Index = () => {
                     >
                       <X className="w-3 h-3" />
                     </Button>
-                    <div className="pr-8">
-                      {String(devResults.signData)}
-                    </div>
+                    <div className="pr-8">{String(devResults.signData)}</div>
                   </div>
                 )}
               </div>

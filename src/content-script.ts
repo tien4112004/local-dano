@@ -10,6 +10,17 @@ chrome.runtime.onMessage.addListener((message) => {
     );
   }
 });
+chrome.runtime.onMessage.addListener((message) => {
+  if (message.type === "FORWARD_ADDRESS_TO_PAGE") {
+    window.postMessage(
+      {
+        type: "LOCALDANO_SET_ADDRESS",
+        address: message.address,
+      },
+      "*"
+    );
+  }
+});
 const script = document.createElement("script");
 script.src = chrome.runtime.getURL("injected-script.js");
 script.onload = function () {

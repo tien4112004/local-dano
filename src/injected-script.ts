@@ -11,6 +11,14 @@ window.addEventListener("message", (event) => {
   }
 });
 
+window.addEventListener("message", (event) => {
+  if (event.source !== window) return;
+  if (event.data?.type === "LOCALDANO_SET_ADDRESS") {
+    window.selectedAddress = event.data.address;
+    console.log("Injected script set selectedAddress:", window.selectedAddress);
+  }
+});
+
 interface Extension {
   cip: number;
 }
@@ -32,7 +40,7 @@ const localDanoInitialPI: LocalDanoInitialAPI = {
   name: "LocalDano",
   icon: "",
   apiVersion: "1.0.0",
-  supportedExtensions: [],
+  supportedExtensions: [{ cip: 95 }],
 
   async enable(extensions?: Extensions): Promise<CardanoFullAPI> {
     return new LocalDanoWallet();

@@ -23,6 +23,18 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     });
   }
 
+  if (request.type === "SET_SELECTED_ADDRESS") {
+    // Relay to content script
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      if (tabs[0]?.id) {
+        chrome.tabs.sendMessage(tabs[0].id, {
+          type: "FORWARD_ADDRESS_TO_PAGE",
+          address: request.address,
+        });
+      }
+    });
+  }
+
   return true; // For async sendResponse if needed
 });
 
