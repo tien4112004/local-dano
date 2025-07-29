@@ -24,6 +24,7 @@ export default defineConfig(({ mode }) => ({
         "content-script": path.resolve(__dirname, "src/content-script.ts"),
         // "injected-script": path.resolve(__dirname, "src/injected-script.ts"),
         background: path.resolve(__dirname, "src/background.ts"),
+        "passphrase-popup": path.resolve(__dirname, "src/passphrase-popup.ts"),
       },
       output: {
         entryFileNames: (chunkInfo) => {
@@ -31,6 +32,7 @@ export default defineConfig(({ mode }) => ({
             "content-script",
             "injected-script",
             "background",
+            "passphrase-popup",
           ];
           if (specialFiles.includes(chunkInfo.name)) {
             return `${chunkInfo.name}.js`;

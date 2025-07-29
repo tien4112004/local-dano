@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Transaction - LocalDano</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #ffffff;
+            padding: 24px;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            padding: 32px;
+            width: 100%;
+            max-width: 400px;
+            border: 1px solid #e5e7eb;
+        }
+        
+        .header {
+            margin-bottom: 24px;
+            text-align: center;
+        }
+        
+        .title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #111827;
+            margin-bottom: 8px;
+        }
+        
+        .description {
+            color: #6b7280;
+            font-size: 14px;
+        }
+        
+        .form-group {
+            margin-bottom: 24px;
+        }
+        
+        .label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            color: #374151;
+            margin-bottom: 8px;
+        }
+        
+        .input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+        
+        .input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        
+        .input:disabled {
+            background-color: #f9fafb;
+            cursor: not-allowed;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+        }
+        
+        .button {
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 1px solid transparent;
+        }
+        
+        .button:disabled {
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+        
+        .button-secondary {
+            background: white;
+            border-color: #d1d5db;
+            color: #374151;
+        }
+        
+        .button-secondary:hover:not(:disabled) {
+            background: #f9fafb;
+        }
+        
+        .button-primary {
+            background: #3b82f6;
+            color: white;
+        }
+        
+        .button-primary:hover:not(:disabled) {
+            background: #2563eb;
+        }
+        
+        .loading {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid #ffffff;
+            border-radius: 50%;
+            border-top-color: transparent;
+            animation: spin 1s ease-in-out infinite;
+            margin-right: 8px;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .error {
+            color: #dc2626;
+            font-size: 12px;
+            margin-top: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1 class="title">Sign Transaction</h1>
+            <p class="description">Enter your wallet passphrase to sign the transaction.</p>
+        </div>
+        
+        <form id="passphraseForm">
+            <div class="form-group">
+                <label for="passphrase" class="label">Passphrase</label>
+                <input 
+                    type="password" 
+                    id="passphrase" 
+                    class="input" 
+                    placeholder="Enter your wallet passphrase"
+                    required
+                >
+                <div id="error" class="error" style="display: none;"></div>
+            </div>
+            
+            <div class="button-group">
+                <button type="button" id="cancelBtn" class="button button-secondary">
+                    Cancel
+                </button>
+                <button type="submit" id="signBtn" class="button button-primary">
+                    <span id="signText">Sign</span>
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <script src="./passphrase-popup.js"></script>
+</body>
+</html>

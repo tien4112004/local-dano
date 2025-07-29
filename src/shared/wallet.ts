@@ -216,47 +216,43 @@ export class LocalDanoWallet implements CardanoFullAPI {
 
   async signTx(tx: string, partialSign: boolean): Promise<string> {
     return new Promise((resolve, reject) => {
-      // Create a promise that will be resolved when the user signs
-      const showPassphraseDialog = () => {
-        // Dispatch event to show passphrase dialog
-        window.dispatchEvent(new CustomEvent('show-passphrase-dialog', {
-          detail: {
-            onSign: async (passphrase: string) => {
-              try {
-                const walletId = window.selectedWalletId;
-                const response = await fetch(
-                  `http://172.16.61.201:3000/wallets/${walletId}/transactions-sign`,
-                  {
-                    method: 'POST',
-                    headers: {
-                      'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                      passphrase,
-                      transaction: tx,
-                      encoding: 'base16'
-                    })
-                  }
-                );
+      const walletId = window.selectedWalletId;
+      
+      // Create popup window for passphrase input
+      const popup = window.open(
+        `./passphrase-popup.html?tx=${encodeURIComponent(tx)}&walletId=${encodeURIComponent(walletId)}`,
+        'passphrase-popup',
+        'width=450,height=350,resizable=no,scrollbars=no,status=no,menubar=no,toolbar=no,location=no'
+      );
 
-                if (!response.ok) {
-                  throw new Error(`Failed to sign transaction: ${response.status}`);
-                }
+      if (!popup) {
+        reject(new Error('Failed to open popup window'));
+        return;
+      }
 
-                const data = await response.json();
-                resolve(data.transaction);
-              } catch (error) {
-                reject(error);
-              }
-            },
-            onCancel: () => {
-              reject(new Error('Transaction signing cancelled'));
-            }
-          }
-        }));
+      // Listen for messages from the popup
+      const handleMessage = (event: MessageEvent) => {
+        if (event.source !== popup) return;
+
+        if (event.data.type === 'PASSPHRASE_SUCCESS') {
+          window.removeEventListener('message', handleMessage);
+          resolve(event.data.signedTransaction);
+        } else if (event.data.type === 'PASSPHRASE_CANCELLED') {
+          window.removeEventListener('message', handleMessage);
+          reject(new Error('Transaction signing cancelled'));
+        }
       };
 
-      showPassphraseDialog();
+      window.addEventListener('message', handleMessage);
+
+      // Handle popup being closed manually
+      const checkClosed = setInterval(() => {
+        if (popup.closed) {
+          clearInterval(checkClosed);
+          window.removeEventListener('message', handleMessage);
+          reject(new Error('Popup window was closed'));
+        }
+      }, 1000);
     });
   }
 
