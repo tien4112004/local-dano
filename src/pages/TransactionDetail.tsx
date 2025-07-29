@@ -1,6 +1,11 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, ArrowUpRight, ArrowDownLeft, ExternalLink } from "lucide-react";
+import {
+  ArrowLeft,
+  ArrowUpRight,
+  ArrowDownLeft,
+  ExternalLink,
+} from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -63,24 +68,28 @@ const TransactionDetail = () => {
   const navigate = useNavigate();
   const { transactionId } = useParams<{ transactionId: string }>();
 
-  const { data: transaction, isLoading, error } = useQuery({
-    queryKey: ['transaction', window.selectedWalletId, transactionId],
+  const {
+    data: transaction,
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ["transaction", window.selectedWalletId, transactionId],
     queryFn: async (): Promise<TransactionDetail> => {
       const response = await fetch(
         `http://172.16.61.201:8090/v2/wallets/${window.selectedWalletId}/transactions/${transactionId}`
       );
-      
+
       if (!response.ok) {
         throw new Error(`Failed to fetch transaction: ${response.status}`);
       }
-      
+
       return response.json();
     },
     enabled: !!window.selectedWalletId && !!transactionId,
   });
 
   const formatAmount = (amount: number) => {
-    return (amount / 1_000_000).toFixed(6) + ' ADA';
+    return (amount / 1_000_000).toFixed(6) + " ADA";
   };
 
   const formatDate = (dateString: string) => {
@@ -88,14 +97,18 @@ const TransactionDetail = () => {
   };
 
   const truncateAddress = (address: string) => {
-    return `${address.slice(0, 8)}...${address.slice(-8)}`;
+    return `${address?.slice(0, 8)}...${address?.slice(-8)}`;
   };
 
   if (isLoading) {
     return (
       <div className="min-h-screen p-4 bg-background">
         <div className="max-w-md mx-auto space-y-4">
-          <Button variant="ghost" size="sm" onClick={() => navigate('/history')}>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => navigate("/history")}
+          >
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back
           </Button>
@@ -118,13 +131,19 @@ const TransactionDetail = () => {
     return (
       <div className="min-h-screen p-4 bg-background">
         <div className="max-w-md mx-auto space-y-4">
-          <Button variant="ghost" size="sm" onClick={() => navigate('/history')}>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => navigate("/history")}
+          >
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back
           </Button>
           <Card>
             <CardContent className="p-6">
-              <p className="text-destructive">Failed to load transaction details</p>
+              <p className="text-destructive">
+                Failed to load transaction details
+              </p>
             </CardContent>
           </Card>
         </div>
@@ -135,10 +154,10 @@ const TransactionDetail = () => {
   return (
     <div className="min-h-screen p-4 bg-background">
       <div className="max-w-md mx-auto space-y-4">
-        <Button 
-          variant="ghost" 
-          size="sm" 
-          onClick={() => navigate('/history')}
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => navigate("/history")}
           className="flex items-center gap-2"
         >
           <ArrowLeft className="h-4 w-4" />
@@ -157,7 +176,11 @@ const TransactionDetail = () => {
                 <CardTitle>
                   {transaction.direction === "outgoing" ? "Sent" : "Received"}
                 </CardTitle>
-                <Badge variant={transaction.status === "in_ledger" ? "default" : "secondary"}>
+                <Badge
+                  variant={
+                    transaction.status === "in_ledger" ? "default" : "secondary"
+                  }
+                >
                   {transaction.status.replace("_", " ")}
                 </Badge>
               </div>
@@ -167,8 +190,15 @@ const TransactionDetail = () => {
             {/* Amount */}
             <div className="space-y-2">
               <h3 className="font-medium">Amount</h3>
-              <p className={`text-2xl font-bold ${transaction.direction === "outgoing" ? "text-destructive" : "text-green-600"}`}>
-                {transaction.direction === "outgoing" ? "-" : "+"}{formatAmount(transaction.amount.quantity)}
+              <p
+                className={`text-2xl font-bold ${
+                  transaction.direction === "outgoing"
+                    ? "text-destructive"
+                    : "text-green-600"
+                }`}
+              >
+                {transaction.direction === "outgoing" ? "-" : "+"}
+                {formatAmount(transaction.amount?.quantity)}
               </p>
             </div>
 
@@ -178,11 +208,13 @@ const TransactionDetail = () => {
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Transaction ID:</span>
-                  <span className="font-mono text-xs">{truncateAddress(transaction.id)}</span>
+                  <span className="font-mono text-xs">
+                    {truncateAddress(transaction.id)}
+                  </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Fee:</span>
-                  <span>{formatAmount(transaction.fee.quantity)}</span>
+                  <span>{formatAmount(transaction.fee?.quantity)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Date:</span>
@@ -190,34 +222,52 @@ const TransactionDetail = () => {
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Block Height:</span>
-                  <span>{transaction.inserted_at.height.quantity}</span>
+                  <span>{transaction.inserted_at.height?.quantity}</span>
                 </div>
-                {transaction.deposit_taken && transaction.deposit_taken.quantity > 0 && (
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Deposit Taken:</span>
-                    <span>{formatAmount(transaction.deposit_taken.quantity)}</span>
-                  </div>
-                )}
-                {transaction.deposit_returned && transaction.deposit_returned.quantity > 0 && (
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Deposit Returned:</span>
-                    <span>{formatAmount(transaction.deposit_returned.quantity)}</span>
-                  </div>
-                )}
+                {transaction.deposit_taken &&
+                  transaction.deposit_taken.quantity > 0 && (
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">
+                        Deposit Taken:
+                      </span>
+                      <span>
+                        {formatAmount(transaction.deposit_taken?.quantity)}
+                      </span>
+                    </div>
+                  )}
+                {transaction.deposit_returned &&
+                  transaction.deposit_returned?.quantity > 0 && (
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">
+                        Deposit Returned:
+                      </span>
+                      <span>
+                        {formatAmount(transaction.deposit_returned?.quantity)}
+                      </span>
+                    </div>
+                  )}
               </div>
             </div>
 
             {/* Inputs */}
             <div className="space-y-3">
-              <h3 className="font-medium">Inputs ({transaction.inputs.length})</h3>
+              <h3 className="font-medium">
+                Inputs ({transaction.inputs.length})
+              </h3>
               <div className="space-y-2">
                 {transaction.inputs.map((input, index) => (
                   <div key={index} className="p-2 bg-muted rounded-lg">
                     <div className="flex justify-between items-start text-sm">
                       <span className="font-mono text-xs text-muted-foreground">
-                        {truncateAddress(input.address)}
+                        {input.address
+                          ? truncateAddress(input.address)
+                          : "Unknown"}
                       </span>
-                      <span>{formatAmount(input.amount.quantity)}</span>
+                      <span>
+                        {input.amount?.quantity
+                          ? formatAmount(input.amount?.quantity)
+                          : "Unknown"}
+                      </span>
                     </div>
                     {input.assets && input.assets.length > 0 && (
                       <div className="mt-1 text-xs text-muted-foreground">
@@ -231,7 +281,9 @@ const TransactionDetail = () => {
 
             {/* Outputs */}
             <div className="space-y-3">
-              <h3 className="font-medium">Outputs ({transaction.outputs.length})</h3>
+              <h3 className="font-medium">
+                Outputs ({transaction.outputs.length})
+              </h3>
               <div className="space-y-2">
                 {transaction.outputs.map((output, index) => (
                   <div key={index} className="p-2 bg-muted rounded-lg">
@@ -239,7 +291,7 @@ const TransactionDetail = () => {
                       <span className="font-mono text-xs text-muted-foreground">
                         {truncateAddress(output.address)}
                       </span>
-                      <span>{formatAmount(output.amount.quantity)}</span>
+                      <span>{formatAmount(output.amount?.quantity)}</span>
                     </div>
                     {output.assets && output.assets.length > 0 && (
                       <div className="mt-1 text-xs text-muted-foreground">
