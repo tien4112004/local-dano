@@ -8,6 +8,7 @@ import Send from "./pages/Send";
 import CreateWallet from "./pages/CreateWallet";
 import Tokens from "./pages/Tokens";
 import TransactionHistory from "./pages/TransactionHistory";
+import TransactionDetail from "./pages/TransactionDetail";
 import Faucet from "./pages/Faucet";
 import NotFound from "./pages/NotFound";
 
@@ -25,6 +26,7 @@ const App = () => (
           <Route path="/create" element={<CreateWallet />} />
           <Route path="/tokens" element={<Tokens />} />
           <Route path="/history" element={<TransactionHistory />} />
+          <Route path="/transaction/:transactionId" element={<TransactionDetail />} />
           <Route path="/faucet" element={<Faucet />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
