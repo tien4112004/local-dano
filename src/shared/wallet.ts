@@ -257,9 +257,26 @@ export class LocalDanoWallet implements CardanoFullAPI {
   }
 
   async submitTx(transaction: string): Promise<string> {
-    // Mock transaction submission
-    console.log("Submitting transaction:", transaction);
-    return "a1b2c3d4e5f6789012345678901234567890123456789012345678901234567890";
+    const walletId = window.selectedWalletId;
+    const response = await fetch(
+      `http://172.16.61.201:8090/v2/wallets/${walletId}/transactions-submit`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          transaction,
+        }),
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(`Failed to submit transaction: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data.id;
   }
 
   async getUsedAddresses(pagination: {
