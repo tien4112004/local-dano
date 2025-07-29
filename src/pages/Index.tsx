@@ -276,7 +276,9 @@ const Index = () => {
                     >
                       <X className="w-3 h-3" />
                     </Button>
-                    <div className="pr-8">{String(devResults.signTx)}</div>
+                    <div className="pr-8 break-all whitespace-pre-wrap">
+                      {String(devResults.signTx)}
+                    </div>
                   </div>
                 )}
               </div>
@@ -313,7 +315,9 @@ const Index = () => {
                     >
                       <X className="w-3 h-3" />
                     </Button>
-                    <div className="pr-8">{String(devResults.submitTx)}</div>
+                    <div className="pr-8 break-all whitespace-pre-wrap">
+                      {String(devResults.submitTx)}
+                    </div>
                   </div>
                 )}
               </div>
@@ -371,7 +375,7 @@ const Index = () => {
                     >
                       <X className="w-3 h-3" />
                     </Button>
-                    <div className="pr-8">
+                    <div className="pr-8 break-all whitespace-pre-wrap">
                       {JSON.stringify(devResults.getUsedAddresses, null, 2)}
                     </div>
                   </div>
@@ -419,7 +423,9 @@ const Index = () => {
                     >
                       <X className="w-3 h-3" />
                     </Button>
-                    <div className="pr-8">{String(devResults.signData)}</div>
+                    <div className="pr-8 break-all whitespace-pre-wrap">
+                      {String(devResults.signData)}
+                    </div>
                   </div>
                 )}
               </div>
