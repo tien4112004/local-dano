@@ -6,21 +6,23 @@ interface SignRequest {
   walletId: string;
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-  const form = document.getElementById('passphraseForm') as HTMLFormElement;
-  const passphraseInput = document.getElementById('passphrase') as HTMLInputElement;
-  const cancelBtn = document.getElementById('cancelBtn') as HTMLButtonElement;
-  const signBtn = document.getElementById('signBtn') as HTMLButtonElement;
-  const signText = document.getElementById('signText') as HTMLSpanElement;
-  const errorDiv = document.getElementById('error') as HTMLDivElement;
+document.addEventListener("DOMContentLoaded", () => {
+  const form = document.getElementById("passphraseForm") as HTMLFormElement;
+  const passphraseInput = document.getElementById(
+    "passphrase"
+  ) as HTMLInputElement;
+  const cancelBtn = document.getElementById("cancelBtn") as HTMLButtonElement;
+  const signBtn = document.getElementById("signBtn") as HTMLButtonElement;
+  const signText = document.getElementById("signText") as HTMLSpanElement;
+  const errorDiv = document.getElementById("error") as HTMLDivElement;
 
   // Get signing request from URL parameters
   const urlParams = new URLSearchParams(window.location.search);
-  const tx = urlParams.get('tx');
-  const walletId = urlParams.get('walletId');
+  const tx = urlParams.get("tx");
+  const walletId = urlParams.get("walletId");
 
   if (!tx || !walletId) {
-    showError('Invalid signing request');
+    showError("Invalid signing request");
     return;
   }
 
@@ -28,12 +30,12 @@ document.addEventListener('DOMContentLoaded', () => {
   passphraseInput.focus();
 
   // Handle form submission
-  form.addEventListener('submit', async (e) => {
+  form.addEventListener("submit", async (e) => {
     e.preventDefault();
-    
+
     const passphrase = passphraseInput.value.trim();
     if (!passphrase) {
-      showError('Please enter your passphrase');
+      showError("Please enter your passphrase");
       return;
     }
 
@@ -41,23 +43,26 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // Handle cancel button
-  cancelBtn.addEventListener('click', () => {
+  cancelBtn.addEventListener("click", () => {
     // Send cancellation message to parent window
     if (window.opener) {
-      window.opener.postMessage({
-        type: 'PASSPHRASE_CANCELLED'
-      }, '*');
+      window.opener.postMessage(
+        {
+          type: "PASSPHRASE_CANCELLED",
+        },
+        "*"
+      );
     }
     window.close();
   });
 
   function showError(message: string) {
     errorDiv.textContent = message;
-    errorDiv.style.display = 'block';
+    errorDiv.style.display = "block";
   }
 
   function hideError() {
-    errorDiv.style.display = 'none';
+    errorDiv.style.display = "none";
   }
 
   function setLoading(loading: boolean) {
@@ -69,7 +74,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (loading) {
       signText.innerHTML = '<span class="loading"></span>Signing...';
     } else {
-      signText.textContent = 'Sign';
+      signText.textContent = "Sign";
     }
   }
 
@@ -79,40 +84,47 @@ document.addEventListener('DOMContentLoaded', () => {
 
     try {
       const response = await fetch(
-        `http://172.16.61.201:3000/wallets/${walletId}/transactions-sign`,
+        `http://172.16.61.201:8090/v2/wallets/${walletId}/transactions-sign`,
         {
-          method: 'POST',
+          method: "POST",
           headers: {
-            'Content-Type': 'application/json',
+            "Content-Type": "application/json",
           },
           body: JSON.stringify({
             passphrase,
             transaction: tx,
-            encoding: 'base16'
-          })
+            encoding: "base16",
+          }),
         }
       );
 
       if (!response.ok) {
         const errorText = await response.text();
-        throw new Error(`Failed to sign transaction: ${response.status} - ${errorText}`);
+        throw new Error(
+          `Failed to sign transaction: ${response.status} - ${errorText}`
+        );
       }
 
       const data = await response.json();
 
       // Send success message to parent window
       if (window.opener) {
-        window.opener.postMessage({
-          type: 'PASSPHRASE_SUCCESS',
-          signedTransaction: data.transaction
-        }, '*');
+        window.opener.postMessage(
+          {
+            type: "PASSPHRASE_SUCCESS",
+            signedTransaction: data.transaction,
+          },
+          "*"
+        );
       }
 
       // Close the popup
       window.close();
     } catch (error) {
-      console.error('Signing error:', error);
-      showError(error instanceof Error ? error.message : 'Failed to sign transaction');
+      console.error("Signing error:", error);
+      showError(
+        error instanceof Error ? error.message : "Failed to sign transaction"
+      );
     } finally {
       setLoading(false);
     }
