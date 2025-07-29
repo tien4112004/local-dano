@@ -27,7 +27,7 @@ function bech32ToHex(bech32: string): string {
 export interface CardanoFullAPI {
   getBalance(): Promise<string>;
   getUtxos(): Promise<Array<string>>;
-  getCollaterals(): Promise<Array<string> | null>;
+  getCollaterals(params?: { amount: string }): Promise<Array<string> | null>;
   signTx(tx: string, partialSign: boolean): Promise<string>;
   submitTx(transaction: string): Promise<string>;
   getUsedAddresses(pagination: {
@@ -137,11 +137,81 @@ export class LocalDanoWallet implements CardanoFullAPI {
     return results;
   }
 
-  async getCollaterals(): Promise<Array<string> | null> {
-    // Mock collateral UTXOs
-    return [
-      "82825820c3d4e5f6789012345678901234567890123456789012345678901234567890123456002",
-    ];
+  async getCollaterals(params?: {
+    amount: string;
+  }): Promise<Array<string> | null> {
+    const address = window.selectedAddress;
+    const response = await fetch(
+      `http://172.16.61.201:3000/addresses/${address}/utxos`
+    );
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch UTXOs: ${response.status}`);
+    }
+
+    const utxos = await response.json();
+    if (!Array.isArray(utxos) || utxos.length === 0) {
+      return null;
+    }
+
+    // Find the UTXO with the lowest lovelace amount
+    let minUtxo = null;
+    let minLovelace = Number.MAX_SAFE_INTEGER;
+
+    for (const utxo of utxos) {
+      const lovelaceEntry = utxo.amount.find(
+        (a: { unit: string; quantity: number }) => a.unit === "lovelace"
+      );
+      if (!lovelaceEntry) continue;
+
+      const lovelaceQty = Number(lovelaceEntry.quantity);
+      if (lovelaceQty < minLovelace) {
+        minLovelace = lovelaceQty;
+        minUtxo = utxo;
+      }
+    }
+
+    if (!minUtxo) return null;
+
+    // Construct CBOR object like getUtxos()
+    const txHashBytes = hexToBytes(minUtxo.tx_hash);
+    const txIndex = minUtxo.tx_index;
+
+    // First element: [tx_hash_bytes, tx_index]
+    const firstElement = [txHashBytes, txIndex];
+
+    // Second element
+    const addressHex = bech32ToHex(minUtxo.address);
+
+    const amountArray = minUtxo.amount;
+    let lovelaceAmount = 0;
+    const assetMap = new Map<Uint8Array, Map<Uint8Array, number>>();
+
+    for (const amt of amountArray) {
+      if (amt.unit === "lovelace") {
+        lovelaceAmount = Number(amt.quantity);
+      } else {
+        const policyId = amt.unit.slice(0, 56);
+        const assetName = amt.unit.slice(56);
+
+        const policyKey = hexToBytes(policyId);
+        const assetKey = hexToBytes(assetName);
+
+        if (!assetMap.has(policyKey)) {
+          assetMap.set(policyKey, new Map());
+        }
+
+        const innerMap = assetMap.get(policyKey)!;
+        innerMap.set(assetKey, Number(amt.quantity));
+      }
+    }
+
+    const secondElement = [addressHex, [lovelaceAmount, assetMap]];
+
+    const finalObject = [firstElement, secondElement];
+    const encoded = encode(finalObject);
+
+    return [uint8ArrayToHex(encoded)];
   }
 
   async signTx(tx: string, partialSign: boolean): Promise<string> {
