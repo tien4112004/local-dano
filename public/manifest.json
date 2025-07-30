@@ -3,10 +3,7 @@
   "name": "LocalDano Wallet",
   "version": "1.0.0",
   "description": "A Cardano wallet browser extension",
-  "permissions": [
-    "activeTab",
-    "storage"
-  ],
+  "permissions": ["activeTab", "storage"],
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
@@ -14,6 +11,9 @@
       "run_at": "document_start"
     }
   ],
+  "content_security_policy": {
+    "extension_pages": "script-src 'self' 'wasm-unsafe-eval'; object-src 'self';"
+  },
   "action": {
     "default_popup": "index.html",
     "default_title": "LocalDano Wallet",

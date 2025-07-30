@@ -3,6 +3,9 @@ import react from "@vitejs/plugin-react-swc";
 import path from "path";
 import { nodePolyfills } from "vite-plugin-node-polyfills";
 import { componentTagger } from "lovable-tagger";
+import { visualizer } from "rollup-plugin-visualizer";
+import wasm from "vite-plugin-wasm";
+import topLevelAwait from "vite-plugin-top-level-await";
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
@@ -12,7 +15,13 @@ export default defineConfig(({ mode }) => ({
   },
   plugins: [
     react(),
-    nodePolyfills(),
+    nodePolyfills({
+      protocolImports: true,
+      include: ["buffer"],
+    }),
+    visualizer({ open: false }),
+    wasm(),
+    topLevelAwait(),
     mode === "development" && componentTagger(),
   ].filter(Boolean),
   resolve: {
@@ -21,6 +30,7 @@ export default defineConfig(({ mode }) => ({
     },
   },
   build: {
+    target: "esnext",
     rollupOptions: {
       input: {
         main: path.resolve(__dirname, "index.html"),
@@ -41,6 +51,11 @@ export default defineConfig(({ mode }) => ({
             return `${chunkInfo.name}.js`;
           }
           return "assets/[name]-[hash].js";
+        },
+        manualChunks(id) {
+          if (id.includes("node_modules")) {
+            return "vendor";
+          }
         },
       },
     },

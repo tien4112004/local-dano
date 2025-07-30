@@ -8,7 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 import { ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { mnemonicToEntropy } from "bip39";
-import { Bip32PrivateKey } from "@emurgo/cardano-serialization-lib-asmjs";
+import { Bip32PrivateKey } from "@emurgo/cardano-serialization-lib-browser";
 import { harden } from "@/utils";
 
 const CreateWallet = () => {
@@ -29,22 +29,21 @@ const CreateWallet = () => {
       return;
     }
 
-    const entropy = mnemonicToEntropy(mnemonic);
-    const rootKey = Bip32PrivateKey.from_bip39_entropy(
-      Buffer.from(entropy, "hex"),
-      Buffer.from("")
-    );
-    const accountKey = rootKey
-      .derive(harden(1852)) // purpose
-      .derive(harden(1815)) // coin type
-      .derive(harden(0)); // default account index
-
-    const dRepPrivKey = accountKey.derive(3).derive(0).to_raw_key(); // default keyIndex = 0
-    const dRepPubKey = dRepPrivKey.to_public();
-    const dRepIdHex = dRepPubKey.hash().to_hex();
-
     setIsLoading(true);
     try {
+      const entropy = mnemonicToEntropy(mnemonic);
+      const rootKey = Bip32PrivateKey.from_bip39_entropy(
+        Buffer.from(entropy, "hex"),
+        Buffer.from("")
+      );
+      const accountKey = rootKey
+        .derive(harden(1852)) // purpose
+        .derive(harden(1815)) // coin type
+        .derive(harden(0)); // default account index
+
+      const dRepPrivKey = accountKey.derive(3).derive(0).to_raw_key(); // default keyIndex = 0
+      const dRepPubKey = dRepPrivKey.to_public();
+      const dRepIdHex = dRepPubKey.hash().to_hex();
       const response = await fetch("http://103.126.158.239:58090/v2/wallets", {
         method: "POST",
         headers: {
@@ -79,8 +78,8 @@ const CreateWallet = () => {
       navigate("/");
     } catch (error) {
       toast({
-        title: "Error",
-        description: "Failed to create wallet",
+        title: "Failed to create wallet",
+        description: error.message,
         variant: "destructive",
       });
     } finally {
