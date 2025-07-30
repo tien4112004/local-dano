@@ -219,7 +219,7 @@ export class LocalDanoWallet implements CardanoFullAPI {
       }
     }
 
-    const secondElement = [addressHex, [lovelaceAmount, assetMap]];
+    const secondElement = [hexToBytes(addressHex), [lovelaceAmount, assetMap]];
 
     const finalObject = [firstElement, secondElement];
     const encoded = encode(finalObject);
