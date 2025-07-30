@@ -1,4 +1,4 @@
-import { encode } from "cbor2";
+import { decode, encode } from "cbor2";
 import { bech32 as bech32lib } from "bech32";
 
 const uint8ArrayToHex = (array: Uint8Array): string => {
@@ -251,7 +251,12 @@ export class LocalDanoWallet implements CardanoFullAPI {
 
         if (event.data.type === "PASSPHRASE_SUCCESS") {
           window.removeEventListener("message", handleMessage);
-          resolve(event.data.signedTransaction);
+          const fullTx = event.data.signedTransaction;
+          const decodedTx = decode(fullTx);
+          const value = decodedTx[1].get(0);
+          const signature =
+            value !== undefined ? new Map([[0, value]]) : new Map();
+          resolve(uint8ArrayToHex(encode(signature)));
         } else if (event.data.type === "PASSPHRASE_CANCELLED") {
           window.removeEventListener("message", handleMessage);
           reject(new Error("Transaction signing cancelled"));
