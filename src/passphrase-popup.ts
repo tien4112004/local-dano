@@ -84,7 +84,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     try {
       const response = await fetch(
-        `http://172.16.61.201:8090/v2/wallets/${walletId}/transactions-sign`,
+        `http://103.126.158.239:58090/v2/wallets/${walletId}/transactions-sign`,
         {
           method: "POST",
           headers: {

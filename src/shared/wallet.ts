@@ -24,7 +24,14 @@ function bech32ToHex(bech32: string): string {
     .join("");
 }
 
+export interface Extension {
+  cip: number;
+}
+
 export interface CardanoFullAPI {
+  cip95: {
+    getPubDRepKey(): Promise<string>;
+  };
   getBalance(): Promise<string>;
   getUtxos(): Promise<Array<string>>;
   getCollaterals(params?: { amount: string }): Promise<Array<string> | null>;
@@ -36,14 +43,20 @@ export interface CardanoFullAPI {
   }): Promise<Array<string>>;
   getNetworkId(): Promise<number>;
   signData(address: string, payload: string): Promise<string>;
-  getExtensions(): Promise<Array<string>>;
+  getExtensions(): Promise<Array<Extension>>;
 }
 
 export class LocalDanoWallet implements CardanoFullAPI {
+  cip95 = {
+    getPubDRepKey: async (): Promise<string> => {
+      return window.dRepIdHex;
+    },
+  };
+
   async getBalance(): Promise<string> {
     const walletId = window.selectedWalletId;
     const response = await fetch(
-      `http://172.16.61.201:8090/v2/wallets/${walletId}`
+      `http://103.126.158.239:58090/v2/wallets/${walletId}`
     );
 
     if (!response.ok) {
@@ -83,7 +96,7 @@ export class LocalDanoWallet implements CardanoFullAPI {
   async getUtxos(): Promise<Array<string>> {
     const address = window.selectedAddress;
     const response = await fetch(
-      `http://172.16.61.201:3000/addresses/${address}/utxos`
+      `http://103.126.158.239:53000/addresses/${address}/utxos`
     );
 
     if (!response.ok) {
@@ -142,7 +155,7 @@ export class LocalDanoWallet implements CardanoFullAPI {
   }): Promise<Array<string> | null> {
     const address = window.selectedAddress;
     const response = await fetch(
-      `http://172.16.61.201:3000/addresses/${address}/utxos`
+      `http://103.126.158.239:53000/addresses/${address}/utxos`
     );
 
     if (!response.ok) {
@@ -217,16 +230,18 @@ export class LocalDanoWallet implements CardanoFullAPI {
   async signTx(tx: string, partialSign: boolean): Promise<string> {
     return new Promise((resolve, reject) => {
       const walletId = window.selectedWalletId;
-      
+
       // Create popup window for passphrase input
       const popup = window.open(
-        `./passphrase-popup.html?tx=${encodeURIComponent(tx)}&walletId=${encodeURIComponent(walletId)}`,
-        'passphrase-popup',
-        'width=450,height=350,resizable=no,scrollbars=no,status=no,menubar=no,toolbar=no,location=no'
+        `./passphrase-popup.html?tx=${encodeURIComponent(
+          tx
+        )}&walletId=${encodeURIComponent(walletId)}`,
+        "passphrase-popup",
+        "width=450,height=350,resizable=no,scrollbars=no,status=no,menubar=no,toolbar=no,location=no"
       );
 
       if (!popup) {
-        reject(new Error('Failed to open popup window'));
+        reject(new Error("Failed to open popup window"));
         return;
       }
 
@@ -234,23 +249,23 @@ export class LocalDanoWallet implements CardanoFullAPI {
       const handleMessage = (event: MessageEvent) => {
         if (event.source !== popup) return;
 
-        if (event.data.type === 'PASSPHRASE_SUCCESS') {
-          window.removeEventListener('message', handleMessage);
+        if (event.data.type === "PASSPHRASE_SUCCESS") {
+          window.removeEventListener("message", handleMessage);
           resolve(event.data.signedTransaction);
-        } else if (event.data.type === 'PASSPHRASE_CANCELLED') {
-          window.removeEventListener('message', handleMessage);
-          reject(new Error('Transaction signing cancelled'));
+        } else if (event.data.type === "PASSPHRASE_CANCELLED") {
+          window.removeEventListener("message", handleMessage);
+          reject(new Error("Transaction signing cancelled"));
         }
       };
 
-      window.addEventListener('message', handleMessage);
+      window.addEventListener("message", handleMessage);
 
       // Handle popup being closed manually
       const checkClosed = setInterval(() => {
         if (popup.closed) {
           clearInterval(checkClosed);
-          window.removeEventListener('message', handleMessage);
-          reject(new Error('Popup window was closed'));
+          window.removeEventListener("message", handleMessage);
+          reject(new Error("Popup window was closed"));
         }
       }, 1000);
     });
@@ -259,7 +274,7 @@ export class LocalDanoWallet implements CardanoFullAPI {
   async submitTx(transaction: string): Promise<string> {
     const walletId = window.selectedWalletId;
     const response = await fetch(
-      `http://172.16.61.201:8090/v2/wallets/${walletId}/transactions-submit`,
+      `http://103.126.158.239:58090/v2/wallets/${walletId}/transactions-submit`,
       {
         method: "POST",
         headers: {
@@ -283,7 +298,7 @@ export class LocalDanoWallet implements CardanoFullAPI {
     page: number;
     limit: number;
   }): Promise<Array<string>> {
-    return [window.selectedAddress];
+    return [bech32ToHex(window.selectedAddress)];
   }
 
   async getNetworkId(): Promise<number> {
@@ -294,7 +309,7 @@ export class LocalDanoWallet implements CardanoFullAPI {
     throw new Error("Not implemented");
   }
 
-  async getExtensions(): Promise<Array<string>> {
-    return ["cip30", "cip95"];
+  async getExtensions(): Promise<Array<Extension>> {
+    return [{ cip: 30 }, { cip: 95 }];
   }
 }

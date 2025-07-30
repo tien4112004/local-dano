@@ -76,7 +76,7 @@ const TransactionDetail = () => {
     queryKey: ["transaction", window.selectedWalletId, transactionId],
     queryFn: async (): Promise<TransactionDetail> => {
       const response = await fetch(
-        `http://172.16.61.201:8090/v2/wallets/${window.selectedWalletId}/transactions/${transactionId}`
+        `http://103.126.158.239:58090/v2/wallets/${window.selectedWalletId}/transactions/${transactionId}`
       );
 
       if (!response.ok) {

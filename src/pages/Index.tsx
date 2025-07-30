@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState, useEffect } from "react";
 import { WalletHeader } from "@/components/wallet/WalletHeader";
 import { WalletList } from "@/components/wallet/WalletList";
@@ -48,11 +49,26 @@ const Index = () => {
       });
       window.selectedWalletId = selectedWallet.id;
 
+      // Retrieve dRepIdHex from localStorage and send it
+      const STORAGE_KEY = "walletDRepMappings";
+      const mappings =
+        JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}") ?? {};
+      console.log(mappings);
+      const dRepIdHex = mappings[selectedWallet.id];
+      if (dRepIdHex) {
+        chrome.runtime.sendMessage({
+          type: "SET_DREP_ID_HEX",
+          dRepIdHex,
+        });
+      } else {
+        console.log("Drep ID not found");
+      }
+
       // Fetch wallet addresses
       const fetchWalletAddress = async () => {
         try {
           const response = await fetch(
-            `http://172.16.61.201:8090/v2/wallets/${selectedWallet.id}/addresses`
+            `http://103.126.158.239:58090/v2/wallets/${selectedWallet.id}/addresses`
           );
           if (response.ok) {
             const addresses = await response.json();

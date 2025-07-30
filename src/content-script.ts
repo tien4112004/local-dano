@@ -9,13 +9,20 @@ chrome.runtime.onMessage.addListener((message) => {
       "*"
     );
   }
-});
-chrome.runtime.onMessage.addListener((message) => {
   if (message.type === "FORWARD_ADDRESS_TO_PAGE") {
     window.postMessage(
       {
         type: "LOCALDANO_SET_ADDRESS",
         address: message.address,
+      },
+      "*"
+    );
+  }
+  if (message.type === "FORWARD_DREP_ID_HEX_TO_PAGE") {
+    window.postMessage(
+      {
+        type: "LOCALDANO_SET_DREP_ID_HEX",
+        dRepIdHex: message.dRepIdHex,
       },
       "*"
     );

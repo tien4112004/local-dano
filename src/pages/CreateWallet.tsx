@@ -7,6 +7,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { mnemonicToEntropy } from "bip39";
+import { Bip32PrivateKey } from "@emurgo/cardano-serialization-lib-asmjs";
+import { harden } from "@/utils";
 
 const CreateWallet = () => {
   const [mnemonic, setMnemonic] = useState("");
@@ -25,10 +28,24 @@ const CreateWallet = () => {
       });
       return;
     }
-    console.log(mnemonic.split(" "));
+
+    const entropy = mnemonicToEntropy(mnemonic);
+    const rootKey = Bip32PrivateKey.from_bip39_entropy(
+      Buffer.from(entropy, "hex"),
+      Buffer.from("")
+    );
+    const accountKey = rootKey
+      .derive(harden(1852)) // purpose
+      .derive(harden(1815)) // coin type
+      .derive(harden(0)); // default account index
+
+    const dRepPrivKey = accountKey.derive(3).derive(0).to_raw_key(); // default keyIndex = 0
+    const dRepPubKey = dRepPrivKey.to_public();
+    const dRepIdHex = dRepPubKey.hash().to_hex();
+
     setIsLoading(true);
     try {
-      const response = await fetch("http://172.16.61.201:8090/v2/wallets", {
+      const response = await fetch("http://103.126.158.239:58090/v2/wallets", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -45,13 +62,20 @@ const CreateWallet = () => {
       }
 
       const result = await response.json();
+      const walletId = result.id;
+
+      // Update localStorage mapping: walletId => dRepIdHex
+      const STORAGE_KEY = "walletDRepMappings";
+      const currentMappings =
+        JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}") ?? {};
+      currentMappings[walletId] = dRepIdHex;
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(currentMappings));
 
       toast({
         title: "Wallet Created",
         description: `Successfully created wallet: ${walletName}`,
       });
 
-      // Navigate back to main page
       navigate("/");
     } catch (error) {
       toast({

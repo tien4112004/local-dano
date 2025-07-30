@@ -1,6 +1,7 @@
-import { CardanoFullAPI, LocalDanoWallet } from "./shared/wallet";
+import { CardanoFullAPI, Extension, LocalDanoWallet } from "./shared/wallet";
 
 window.addEventListener("message", (event) => {
+  console.log(event.data);
   if (event.source !== window) return;
   if (event.data?.type === "LOCALDANO_SET_WALLET_ID") {
     window.selectedWalletId = event.data.walletId;
@@ -9,19 +10,15 @@ window.addEventListener("message", (event) => {
       window.selectedWalletId
     );
   }
-});
-
-window.addEventListener("message", (event) => {
-  if (event.source !== window) return;
   if (event.data?.type === "LOCALDANO_SET_ADDRESS") {
     window.selectedAddress = event.data.address;
     console.log("Injected script set selectedAddress:", window.selectedAddress);
   }
+  if (event.data?.type === "LOCALDANO_SET_DREP_ID_HEX") {
+    window.dRepIdHex = event.data.dRepIdHex;
+    console.log("Injected script set dRepIdHex:", window.dRepIdHex);
+  }
 });
-
-interface Extension {
-  cip: number;
-}
 
 interface Extensions {
   extensions: Array<Extension>;

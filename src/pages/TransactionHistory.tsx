@@ -25,24 +25,28 @@ interface Transaction {
 const TransactionHistory = () => {
   const navigate = useNavigate();
 
-  const { data: transactions, isLoading, error } = useQuery({
-    queryKey: ['transactions', window.selectedWalletId],
+  const {
+    data: transactions,
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ["transactions", window.selectedWalletId],
     queryFn: async (): Promise<Transaction[]> => {
       const response = await fetch(
-        `http://172.16.61.201:8090/v2/wallets/${window.selectedWalletId}/transactions`
+        `http://103.126.158.239:58090/v2/wallets/${window.selectedWalletId}/transactions`
       );
-      
+
       if (!response.ok) {
         throw new Error(`Failed to fetch transactions: ${response.status}`);
       }
-      
+
       return response.json();
     },
     enabled: !!window.selectedWalletId,
   });
 
   const formatAmount = (amount: number) => {
-    return (amount / 1_000_000).toFixed(2) + ' ADA';
+    return (amount / 1_000_000).toFixed(2) + " ADA";
   };
 
   const formatDate = (dateString: string) => {
@@ -52,16 +56,16 @@ const TransactionHistory = () => {
   return (
     <div className="min-h-screen p-4 bg-background">
       <div className="max-w-md mx-auto space-y-4">
-        <Button 
-          variant="ghost" 
-          size="sm" 
-          onClick={() => navigate('/')}
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => navigate("/")}
           className="flex items-center gap-2"
         >
           <ArrowLeft className="h-4 w-4" />
           Back
         </Button>
-        
+
         <Card>
           <CardHeader>
             <CardTitle>Transaction History</CardTitle>
@@ -102,8 +106,15 @@ const TransactionHistory = () => {
                         </div>
                       </div>
                       <div className="text-right">
-                        <p className={`font-medium ${tx.direction === "outgoing" ? "text-destructive" : "text-green-600"}`}>
-                          {tx.direction === "outgoing" ? "-" : "+"}{formatAmount(tx.amount.quantity)}
+                        <p
+                          className={`font-medium ${
+                            tx.direction === "outgoing"
+                              ? "text-destructive"
+                              : "text-green-600"
+                          }`}
+                        >
+                          {tx.direction === "outgoing" ? "-" : "+"}
+                          {formatAmount(tx.amount.quantity)}
                         </p>
                         <p className="text-sm text-muted-foreground capitalize">
                           {tx.status}

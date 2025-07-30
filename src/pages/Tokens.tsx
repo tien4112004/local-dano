@@ -37,11 +37,11 @@ const Tokens = () => {
       try {
         const selectedWalletId = (window as any).selectedWalletId;
         if (!selectedWalletId) {
-          throw new Error('No wallet selected');
+          throw new Error("No wallet selected");
         }
 
         const response = await fetch(
-          `http://172.16.61.201:8090/v2/wallets/${selectedWalletId}`
+          `http://103.126.158.239:58090/v2/wallets/${selectedWalletId}`
         );
 
         if (!response.ok) {
@@ -51,7 +51,7 @@ const Tokens = () => {
         const data = await response.json();
         setWalletData(data);
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Unknown error');
+        setError(err instanceof Error ? err.message : "Unknown error");
       } finally {
         setLoading(false);
       }
@@ -65,10 +65,10 @@ const Tokens = () => {
   };
 
   const formatAssetName = (assetName: string) => {
-    if (!assetName) return 'Native Token';
+    if (!assetName) return "Native Token";
     // Convert hex to string if possible
     try {
-      return Buffer.from(assetName, 'hex').toString('utf8') || assetName;
+      return Buffer.from(assetName, "hex").toString("utf8") || assetName;
     } catch {
       return assetName;
     }
@@ -78,10 +78,10 @@ const Tokens = () => {
     return (
       <div className="min-h-screen p-4 bg-background">
         <div className="max-w-md mx-auto space-y-4">
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            onClick={() => navigate('/')}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => navigate("/")}
             className="flex items-center gap-2"
           >
             <ArrowLeft className="h-4 w-4" />
@@ -101,10 +101,10 @@ const Tokens = () => {
     return (
       <div className="min-h-screen p-4 bg-background">
         <div className="max-w-md mx-auto space-y-4">
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            onClick={() => navigate('/')}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => navigate("/")}
             className="flex items-center gap-2"
           >
             <ArrowLeft className="h-4 w-4" />
@@ -123,16 +123,16 @@ const Tokens = () => {
   return (
     <div className="min-h-screen p-4 bg-background">
       <div className="max-w-md mx-auto space-y-4">
-        <Button 
-          variant="ghost" 
-          size="sm" 
-          onClick={() => navigate('/')}
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => navigate("/")}
           className="flex items-center gap-2"
         >
           <ArrowLeft className="h-4 w-4" />
           Back
         </Button>
-        
+
         {/* Wallet Balance */}
         <Card>
           <CardHeader>
@@ -145,20 +145,29 @@ const Tokens = () => {
             <div>
               <p className="text-sm text-muted-foreground">Total Balance</p>
               <p className="text-2xl font-bold">
-                {walletData ? formatLovelace(walletData.balance.total.quantity) : '0'} ADA
+                {walletData
+                  ? formatLovelace(walletData.balance.total.quantity)
+                  : "0"}{" "}
+                ADA
               </p>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <p className="text-sm text-muted-foreground">Available</p>
                 <p className="font-semibold">
-                  {walletData ? formatLovelace(walletData.balance.available.quantity) : '0'} ADA
+                  {walletData
+                    ? formatLovelace(walletData.balance.available.quantity)
+                    : "0"}{" "}
+                  ADA
                 </p>
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Rewards</p>
                 <p className="font-semibold">
-                  {walletData ? formatLovelace(walletData.balance.reward.quantity) : '0'} ADA
+                  {walletData
+                    ? formatLovelace(walletData.balance.reward.quantity)
+                    : "0"}{" "}
+                  ADA
                 </p>
               </div>
             </div>
@@ -172,19 +181,28 @@ const Tokens = () => {
           </CardHeader>
           <CardContent>
             {walletData?.assets.total.length === 0 ? (
-              <p className="text-muted-foreground text-center">No assets found</p>
+              <p className="text-muted-foreground text-center">
+                No assets found
+              </p>
             ) : (
               <div className="space-y-3">
                 {walletData?.assets.total.map((asset, index) => (
-                  <div key={index} className="flex justify-between items-center p-3 border rounded-lg">
+                  <div
+                    key={index}
+                    className="flex justify-between items-center p-3 border rounded-lg"
+                  >
                     <div>
-                      <p className="font-medium">{formatAssetName(asset.asset_name)}</p>
+                      <p className="font-medium">
+                        {formatAssetName(asset.asset_name)}
+                      </p>
                       <p className="text-sm text-muted-foreground truncate">
                         Policy: {asset.policy_id.substring(0, 8)}...
                       </p>
                     </div>
                     <div className="text-right">
-                      <p className="font-semibold">{asset.quantity.toLocaleString()}</p>
+                      <p className="font-semibold">
+                        {asset.quantity.toLocaleString()}
+                      </p>
                     </div>
                   </div>
                 ))}

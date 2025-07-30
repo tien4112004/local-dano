@@ -35,6 +35,18 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     });
   }
 
+  if (request.type === "SET_DREP_ID_HEX") {
+    // Relay to content script
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      if (tabs[0]?.id) {
+        chrome.tabs.sendMessage(tabs[0].id, {
+          type: "FORWARD_DREP_ID_HEX_TO_PAGE",
+          dRepIdHex: request.dRepIdHex,
+        });
+      }
+    });
+  }
+
   return true; // For async sendResponse if needed
 });
 
