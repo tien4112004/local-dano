@@ -31,6 +31,8 @@ export interface Extension {
 export interface CardanoFullAPI {
   cip95: {
     getPubDRepKey(): Promise<string>;
+    getRegisteredPubStakeKeys(): Promise<string[]>;
+    getUnregisteredPubStakeKeys(): Promise<string[]>;
   };
   getBalance(): Promise<string>;
   getUtxos(): Promise<Array<string>>;
@@ -46,10 +48,53 @@ export interface CardanoFullAPI {
   getExtensions(): Promise<Array<Extension>>;
 }
 
+const getStakeKey = async (): Promise<string> => {
+  const response = await fetch(
+    `http://103.126.158.239:58090/v2/wallets/${window.selectedWalletId}/stake-keys`
+  );
+  const data = await response.json();
+  const stakeKey = data.ours[0].key;
+  return stakeKey;
+};
+
+const isStakeKeyRegistered = async (stakeKey: string) => {
+  const blockfrostResponse = await fetch(
+    `http://103.126.158.239:53000/accounts/${stakeKey}/registrations`
+  );
+  const blockfrostData = await blockfrostResponse.json();
+
+  // if error return false
+  if (!blockfrostData || blockfrostData.error || blockfrostData.length == 0) {
+    return false;
+  }
+  // if the most recent action was to register
+  if (blockfrostData.reverse()[0].action == "registered") {
+    return true;
+  }
+
+  return false;
+};
+
 export class LocalDanoWallet implements CardanoFullAPI {
   cip95 = {
     getPubDRepKey: async (): Promise<string> => {
       return window.dRepIdHex;
+    },
+    getRegisteredPubStakeKeys: async (): Promise<string[]> => {
+      const stakeKey = await getStakeKey();
+      if (await isStakeKeyRegistered(stakeKey)) {
+        return [bech32ToHex(stakeKey)];
+      } else {
+        return [];
+      }
+    },
+    getUnregisteredPubStakeKeys: async (): Promise<string[]> => {
+      const stakeKey = await getStakeKey();
+      if (await isStakeKeyRegistered(stakeKey)) {
+        return [];
+      } else {
+        return [bech32ToHex(stakeKey)];
+      }
     },
   };
 

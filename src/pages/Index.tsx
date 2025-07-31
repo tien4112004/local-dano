@@ -108,6 +108,7 @@ const Index = () => {
     try {
       const wallet = new LocalDanoWallet();
       let result;
+      console.log(functionName);
 
       switch (functionName) {
         case "getBalance":
@@ -124,6 +125,15 @@ const Index = () => {
           break;
         case "getExtensions":
           result = await wallet.getExtensions();
+          break;
+        case "getPubDRepKey":
+          result = await wallet.cip95.getPubDRepKey();
+          break;
+        case "getRegisteredPubStakeKeys":
+          result = await wallet.cip95.getRegisteredPubStakeKeys();
+          break;
+        case "getUnregisteredPubStakeKeys":
+          result = await wallet.cip95.getUnregisteredPubStakeKeys();
           break;
         case "signTx":
           result = await wallet.signTx(
@@ -212,6 +222,9 @@ const Index = () => {
                 "getCollaterals",
                 "getNetworkId",
                 "getExtensions",
+                "getPubDRepKey",
+                "getRegisteredPubStakeKeys",
+                "getUnregisteredPubStakeKeys",
               ].map((func, index) => (
                 <div key={func}>
                   {index > 0 && <Separator className="my-4" />}
