@@ -50,10 +50,10 @@ export interface CardanoFullAPI {
 
 const getStakeKey = async (): Promise<string> => {
   const response = await fetch(
-    `http://103.126.158.239:58090/v2/addresses/${window.selectedAddress}`
+    `http://103.126.158.239:58090/v2/wallets/${window.selectedWalletId}/stake-keys`
   );
   const data = await response.json();
-  const stakeKey = data.stake_key_hash_bech32;
+  const stakeKey = data.ours[0].key;
   return stakeKey;
 };
 
