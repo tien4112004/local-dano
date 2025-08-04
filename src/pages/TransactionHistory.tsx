@@ -4,6 +4,7 @@ import { ArrowLeft, ArrowUpRight, ArrowDownLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { Skeleton } from "@/components/ui/skeleton";
+import { CARDANO_WALLET_ENDPOINT } from "@/consts";
 
 interface Transaction {
   id: string;
@@ -33,7 +34,7 @@ const TransactionHistory = () => {
     queryKey: ["transactions", window.selectedWalletId],
     queryFn: async (): Promise<Transaction[]> => {
       const response = await fetch(
-        `http://103.126.158.239:58090/v2/wallets/${window.selectedWalletId}/transactions`
+        `${CARDANO_WALLET_ENDPOINT}/wallets/${window.selectedWalletId}/transactions`
       );
 
       if (!response.ok) {

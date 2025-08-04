@@ -1,3 +1,5 @@
+import { CARDANO_WALLET_ENDPOINT } from "./consts";
+
 // Passphrase popup window logic
 let isLoading = false;
 
@@ -84,7 +86,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     try {
       const response = await fetch(
-        `http://103.126.158.239:58090/v2/wallets/${walletId}/transactions-sign`,
+        `${CARDANO_WALLET_ENDPOINT}/wallets/${walletId}/transactions-sign`,
         {
           method: "POST",
           headers: {

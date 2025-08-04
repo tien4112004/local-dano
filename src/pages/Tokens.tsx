@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft, Coins } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
+import { CARDANO_WALLET_ENDPOINT } from "@/consts";
 
 interface WalletBalance {
   available: { quantity: number; unit: string };
@@ -41,7 +42,7 @@ const Tokens = () => {
         }
 
         const response = await fetch(
-          `http://103.126.158.239:58090/v2/wallets/${selectedWalletId}`
+          `${CARDANO_WALLET_ENDPOINT}/wallets/${selectedWalletId}`
         );
 
         if (!response.ok) {

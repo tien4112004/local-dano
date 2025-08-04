@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
+import { CARDANO_WALLET_ENDPOINT } from "@/consts";
 
 interface Wallet {
   id: string;
@@ -32,7 +33,7 @@ export const WalletList = ({
 
   const fetchWallets = async () => {
     try {
-      const response = await fetch("http://103.126.158.239:58090/v2/wallets");
+      const response = await fetch(`${CARDANO_WALLET_ENDPOINT}/wallets`);
       if (!response.ok) {
         throw new Error("Failed to fetch wallets");
       }

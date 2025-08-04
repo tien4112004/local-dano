@@ -10,6 +10,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
+import { CARDANO_WALLET_ENDPOINT } from "@/consts";
 
 interface TransactionDetail {
   id: string;
@@ -76,7 +77,7 @@ const TransactionDetail = () => {
     queryKey: ["transaction", window.selectedWalletId, transactionId],
     queryFn: async (): Promise<TransactionDetail> => {
       const response = await fetch(
-        `http://103.126.158.239:58090/v2/wallets/${window.selectedWalletId}/transactions/${transactionId}`
+        `${CARDANO_WALLET_ENDPOINT}/wallets/${window.selectedWalletId}/transactions/${transactionId}`
       );
 
       if (!response.ok) {

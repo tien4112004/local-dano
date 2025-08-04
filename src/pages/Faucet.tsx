@@ -29,7 +29,7 @@ const Faucet = () => {
 
     setIsLoading(true);
     try {
-      const response = await fetch("http://172.16.61.201:8888/top-up", {
+      const response = await fetch("https://172.16.61.201:8888/top-up", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

@@ -10,6 +10,7 @@ import { useNavigate } from "react-router-dom";
 import { mnemonicToEntropy } from "bip39";
 import { Bip32PrivateKey } from "@emurgo/cardano-serialization-lib-browser";
 import { harden } from "@/utils";
+import { CARDANO_WALLET_ENDPOINT } from "@/consts";
 
 const CreateWallet = () => {
   const [mnemonic, setMnemonic] = useState("");
@@ -44,7 +45,7 @@ const CreateWallet = () => {
       const dRepPrivKey = accountKey.derive(3).derive(0).to_raw_key(); // default keyIndex = 0
       const dRepPubKey = dRepPrivKey.to_public();
       const dRepIdHex = dRepPubKey.hash().to_hex();
-      const response = await fetch("http://103.126.158.239:58090/v2/wallets", {
+      const response = await fetch(`${CARDANO_WALLET_ENDPOINT}/wallets`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

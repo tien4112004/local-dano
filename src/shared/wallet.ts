@@ -1,5 +1,6 @@
 import { decode, encode } from "cbor2";
 import { bech32 as bech32lib } from "bech32";
+import { CARDANO_WALLET_ENDPOINT } from "@/consts";
 
 const uint8ArrayToHex = (array: Uint8Array): string => {
   return Array.from(array)
@@ -50,7 +51,7 @@ export interface CardanoFullAPI {
 
 const getStakeKey = async (): Promise<string> => {
   const response = await fetch(
-    `http://103.126.158.239:58090/v2/wallets/${window.selectedWalletId}/stake-keys`
+    `${CARDANO_WALLET_ENDPOINT}/wallets/${window.selectedWalletId}/stake-keys`
   );
   const data = await response.json();
   const stakeKey = data.ours[0].key;
@@ -59,7 +60,7 @@ const getStakeKey = async (): Promise<string> => {
 
 const isStakeKeyRegistered = async (stakeKey: string) => {
   const blockfrostResponse = await fetch(
-    `http://103.126.158.239:53000/accounts/${stakeKey}/registrations`
+    `https://private-cardano.dev.tekoapis.net/blockfrost/accounts/${stakeKey}/registrations`
   );
   const blockfrostData = await blockfrostResponse.json();
 
@@ -101,7 +102,7 @@ export class LocalDanoWallet implements CardanoFullAPI {
   async getBalance(): Promise<string> {
     const walletId = window.selectedWalletId;
     const response = await fetch(
-      `http://103.126.158.239:58090/v2/wallets/${walletId}`
+      `${CARDANO_WALLET_ENDPOINT}/wallets/${walletId}`
     );
 
     if (!response.ok) {
@@ -135,13 +136,15 @@ export class LocalDanoWallet implements CardanoFullAPI {
       assetMap,
     ];
 
-    return uint8ArrayToHex(encode(objectToEncode));
+    return assetMap.size == 0
+      ? uint8ArrayToHex(encode(lovelaceAmount))
+      : uint8ArrayToHex(encode(objectToEncode));
   }
 
   async getUtxos(): Promise<Array<string>> {
     const address = window.selectedAddress;
     const response = await fetch(
-      `http://103.126.158.239:53000/addresses/${address}/utxos`
+      `https://private-cardano.dev.tekoapis.net/blockfrost/addresses/${address}/utxos`
     );
 
     if (!response.ok) {
@@ -200,7 +203,7 @@ export class LocalDanoWallet implements CardanoFullAPI {
   }): Promise<Array<string> | null> {
     const address = window.selectedAddress;
     const response = await fetch(
-      `http://103.126.158.239:53000/addresses/${address}/utxos`
+      `https://private-cardano.dev.tekoapis.net/blockfrost/addresses/${address}/utxos`
     );
 
     if (!response.ok) {
@@ -324,7 +327,7 @@ export class LocalDanoWallet implements CardanoFullAPI {
   async submitTx(transaction: string): Promise<string> {
     const walletId = window.selectedWalletId;
     const response = await fetch(
-      `http://103.126.158.239:58090/v2/wallets/${walletId}/transactions-submit`,
+      `${CARDANO_WALLET_ENDPOINT}/wallets/${walletId}/transactions-submit`,
       {
         method: "POST",
         headers: {

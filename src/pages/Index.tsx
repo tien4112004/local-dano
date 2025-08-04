@@ -11,6 +11,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Separator } from "@/components/ui/separator";
 import { Loader2, X } from "lucide-react";
 import { LocalDanoWallet } from "@/shared/wallet";
+import { CARDANO_WALLET_ENDPOINT } from "@/consts";
 
 interface Wallet {
   id: string;
@@ -68,7 +69,7 @@ const Index = () => {
       const fetchWalletAddress = async () => {
         try {
           const response = await fetch(
-            `http://103.126.158.239:58090/v2/wallets/${selectedWallet.id}/addresses`
+            `${CARDANO_WALLET_ENDPOINT}/wallets/${selectedWallet.id}/addresses`
           );
           if (response.ok) {
             const addresses = await response.json();
