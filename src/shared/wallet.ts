@@ -166,12 +166,12 @@ export class LocalDanoWallet implements CardanoFullAPI {
 
       const amountArray = utxo.amount;
 
-      let lovelaceAmount = "0";
+      let lovelaceAmount = 0;
       const assetMap = new Map<Uint8Array, Map<Uint8Array, number>>();
 
       for (const amt of amountArray) {
         if (amt.unit === "lovelace") {
-          lovelaceAmount = amt.quantity;
+          lovelaceAmount = Number(amt.quantity);
         } else {
           const policyId = amt.unit.slice(0, 56);
           const assetName = amt.unit.slice(56);
