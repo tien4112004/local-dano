@@ -44,7 +44,7 @@ const CreateWallet = () => {
 
       const dRepPrivKey = accountKey.derive(3).derive(0).to_raw_key(); // default keyIndex = 0
       const dRepPubKey = dRepPrivKey.to_public();
-      const dRepIdHex = dRepPubKey.hash().to_hex();
+      const dRepIdHex = dRepPubKey.to_hex();
       const response = await fetch(`${CARDANO_WALLET_ENDPOINT}/wallets`, {
         method: "POST",
         headers: {
