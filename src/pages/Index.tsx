@@ -109,7 +109,6 @@ const Index = () => {
     try {
       const wallet = new LocalDanoWallet();
       let result;
-      console.log(functionName);
 
       switch (functionName) {
         case "getBalance":

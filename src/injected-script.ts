@@ -1,7 +1,6 @@
 import { CardanoFullAPI, Extension, LocalDanoWallet } from "./shared/wallet";
 
 window.addEventListener("message", (event) => {
-  console.log(event.data);
   if (event.source !== window) return;
   if (event.data?.type === "LOCALDANO_SET_WALLET_ID") {
     window.selectedWalletId = event.data.walletId;
