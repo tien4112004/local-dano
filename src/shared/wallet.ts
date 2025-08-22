@@ -279,14 +279,34 @@ export class LocalDanoWallet implements CardanoFullAPI {
   }
 
   async signTx(tx: string, partialSign: boolean): Promise<string> {
-    return new Promise((resolve, reject) => {
-      const walletId = window.selectedWalletId;
+    const walletId = window.selectedWalletId;
 
-      // Create popup window for passphrase input
-      const popupUrl = chrome.runtime.getURL(`passphrase-popup.html?tx=${encodeURIComponent(
-        tx
-      )}&walletId=${encodeURIComponent(walletId)}`);
-      
+    // Request extension-resolved URL from the content script since 'chrome' is not available in page context
+    const popupUrl: string = await new Promise((resolve) => {
+      const onMessage = (event: MessageEvent) => {
+        if (event.source !== window) return;
+        if (
+          event.data?.type === "LOCALDANO_EXTENSION_URL" &&
+          event.data?.path === "passphrase-popup.html"
+        ) {
+          window.removeEventListener("message", onMessage);
+          resolve(event.data.url as string);
+        }
+      };
+      window.addEventListener("message", onMessage);
+      window.postMessage(
+        {
+          type: "LOCALDANO_GET_EXTENSION_URL",
+          path: "passphrase-popup.html",
+          tx,
+          walletId,
+        },
+        "*"
+      );
+    });
+
+    return new Promise((resolve, reject) => {
+      // Create popup window for passphrase input using the resolved extension URL
       const popup = window.open(
         popupUrl,
         "passphrase-popup",

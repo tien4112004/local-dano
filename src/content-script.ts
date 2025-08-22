@@ -28,6 +28,28 @@ chrome.runtime.onMessage.addListener((message) => {
     );
   }
 });
+
+// Bridge: page -> content-script -> extension URL
+window.addEventListener("message", (event) => {
+  if (event.source !== window) return;
+  const data = event.data as any;
+  if (data?.type === "LOCALDANO_GET_EXTENSION_URL") {
+    const path = data.path || "passphrase-popup.html";
+    const base = chrome.runtime.getURL(path);
+    const url =
+      base +
+      "?tx=" +
+      encodeURIComponent(data.tx) +
+      "&walletId=" +
+      encodeURIComponent(data.walletId);
+
+    window.postMessage(
+      { type: "LOCALDANO_EXTENSION_URL", path, url },
+      "*"
+    );
+  }
+});
+
 const script = document.createElement("script");
 script.src = chrome.runtime.getURL("injected-script.js");
 script.onload = function () {
