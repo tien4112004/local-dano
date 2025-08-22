@@ -283,10 +283,12 @@ export class LocalDanoWallet implements CardanoFullAPI {
       const walletId = window.selectedWalletId;
 
       // Create popup window for passphrase input
+      const popupUrl = chrome.runtime.getURL(`passphrase-popup.html?tx=${encodeURIComponent(
+        tx
+      )}&walletId=${encodeURIComponent(walletId)}`);
+      
       const popup = window.open(
-        `./passphrase-popup.html?tx=${encodeURIComponent(
-          tx
-        )}&walletId=${encodeURIComponent(walletId)}`,
+        popupUrl,
         "passphrase-popup",
         "width=450,height=350,resizable=no,scrollbars=no,status=no,menubar=no,toolbar=no,location=no"
       );
