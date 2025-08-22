@@ -12,42 +12,78 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   }
 
   if (request.type === "SET_SELECTED_WALLET_ID") {
-    // Relay to content script
-    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-      if (tabs[0]?.id) {
-        chrome.tabs.sendMessage(tabs[0].id, {
-          type: "FORWARD_WALLET_ID_TO_PAGE",
-          walletId: request.walletId,
-        });
-      }
+    // Persist selected wallet ID in extension storage
+    chrome.storage.local.set({ selectedWalletId: request.walletId }, () => {
+      // Relay to content script
+      chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+        if (tabs[0]?.id) {
+          chrome.tabs.sendMessage(tabs[0].id, {
+            type: "FORWARD_WALLET_ID_TO_PAGE",
+            walletId: request.walletId,
+          });
+        }
+      });
     });
   }
 
   if (request.type === "SET_SELECTED_ADDRESS") {
-    // Relay to content script
-    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-      if (tabs[0]?.id) {
-        chrome.tabs.sendMessage(tabs[0].id, {
-          type: "FORWARD_ADDRESS_TO_PAGE",
-          address: request.address,
-        });
-      }
+    // Persist selected address in extension storage
+    chrome.storage.local.set({ selectedAddress: request.address }, () => {
+      // Relay to content script
+      chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+        if (tabs[0]?.id) {
+          chrome.tabs.sendMessage(tabs[0].id, {
+            type: "FORWARD_ADDRESS_TO_PAGE",
+            address: request.address,
+          });
+        }
+      });
     });
   }
 
   if (request.type === "SET_DREP_ID_HEX") {
-    // Relay to content script
-    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-      if (tabs[0]?.id) {
-        chrome.tabs.sendMessage(tabs[0].id, {
-          type: "FORWARD_DREP_ID_HEX_TO_PAGE",
-          dRepIdHex: request.dRepIdHex,
-        });
-      }
+    // Persist dRepIdHex in extension storage
+    chrome.storage.local.set({ dRepIdHex: request.dRepIdHex }, () => {
+      // Relay to content script
+      chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+        if (tabs[0]?.id) {
+          chrome.tabs.sendMessage(tabs[0].id, {
+            type: "FORWARD_DREP_ID_HEX_TO_PAGE",
+            dRepIdHex: request.dRepIdHex,
+          });
+        }
+      });
     });
   }
 
   return true; // For async sendResponse if needed
+});
+
+// Listen for tab updates to inject values into pages
+chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
+  if (changeInfo.status === 'complete' && tab.url) {
+    // Get stored values and inject them into the page
+    chrome.storage.local.get(['selectedWalletId', 'selectedAddress', 'dRepIdHex'], (result) => {
+      if (result.selectedWalletId) {
+        chrome.tabs.sendMessage(tabId, {
+          type: "INJECT_WALLET_ID",
+          walletId: result.selectedWalletId,
+        });
+      }
+      if (result.selectedAddress) {
+        chrome.tabs.sendMessage(tabId, {
+          type: "INJECT_ADDRESS",
+          address: result.selectedAddress,
+        });
+      }
+      if (result.dRepIdHex) {
+        chrome.tabs.sendMessage(tabId, {
+          type: "INJECT_DREP_ID_HEX",
+          dRepIdHex: result.dRepIdHex,
+        });
+      }
+    });
+  }
 });
 
 console.log("✅ Background service worker loaded");

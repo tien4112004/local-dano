@@ -44,9 +44,12 @@ const Index = () => {
   useEffect(() => {
     // Store selected wallet for injected script access and fetch address
     if (selectedWallet) {
-      chrome.runtime.sendMessage({
-        type: "SET_SELECTED_WALLET_ID",
-        walletId: selectedWallet.id,
+      // Save selectedWalletId to extension storage
+      chrome.storage.local.set({ selectedWalletId: selectedWallet.id }, () => {
+        chrome.runtime.sendMessage({
+          type: "SET_SELECTED_WALLET_ID",
+          walletId: selectedWallet.id,
+        });
       });
       window.selectedWalletId = selectedWallet.id;
 
@@ -99,6 +102,20 @@ const Index = () => {
       });
     }
   }, [selectedWallet]);
+
+  useEffect(() => {
+    // Restore selected wallet from extension storage on mount
+    chrome.storage.local.get("selectedWalletId", (result) => {
+      const savedWalletId = result.selectedWalletId;
+      if (savedWalletId) {
+        fetch(`${CARDANO_WALLET_ENDPOINT}/wallets/${savedWalletId}`)
+          .then((response) => response.ok ? response.json() : null)
+          .then((wallet) => {
+            if (wallet) setSelectedWallet(wallet);
+          });
+      }
+    });
+  }, []);
 
   const handleWalletSelect = (wallet: Wallet) => {
     setSelectedWallet(wallet);
