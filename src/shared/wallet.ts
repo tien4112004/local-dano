@@ -17,7 +17,7 @@ const hexToBytes = (hex: string): Uint8Array => {
   return bytes;
 };
 
-function bech32ToHex(bech32: string): string {
+export function bech32ToHex(bech32: string): string {
   const decoded = bech32lib.decode(bech32, 1000);
   const bytes = bech32lib.fromWords(decoded.words);
   return Array.from(bytes)

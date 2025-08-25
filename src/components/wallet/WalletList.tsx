@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { CARDANO_WALLET_ENDPOINT } from "@/consts";
-import { bech32 } from "bech32";
+import { bech32ToHex } from "@/shared/wallet";
 
 interface Wallet {
   id: string;
@@ -32,16 +32,6 @@ export const WalletList = ({
     fetchWallets();
   }, []);
 
-  const bech32ToHex = (bech32Id: string) => {
-    try {
-      const decoded = bech32.decode(bech32Id);
-      const bytes = bech32.fromWords(decoded.words);
-      return Array.from(bytes).map(b => b.toString(16).padStart(2, "0")).join("");
-    } catch {
-      return "";
-    }
-  };
-
   const fetchWallets = async () => {
     try {
       const response = await fetch(`${CARDANO_WALLET_ENDPOINT}/wallets`);
@@ -52,14 +42,18 @@ export const WalletList = ({
       const data = await response.json();
       const processed = data.map((wallet: any) => {
         if (wallet?.delegation?.active?.voting?.startsWith("drep")) {
-            console.log("Processing wallet with dRep:", wallet.delegation.active.voting);
-            wallet.dRepIdHex = bech32ToHex(wallet.delegation.active.voting);
-            
-            // Save dRepIdHex to localStorage
-            const STORAGE_KEY = "walletDRepMappings";
-            const mappings = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}") ?? {};
-            mappings[wallet.id] = wallet.dRepIdHex;
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(mappings));
+          console.log(
+            "Processing wallet with dRep:",
+            wallet.delegation.active.voting
+          );
+          wallet.dRepIdHex = bech32ToHex(wallet.delegation.active.voting);
+
+          // Save dRepIdHex to localStorage
+          const STORAGE_KEY = "walletDRepMappings";
+          const mappings =
+            JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}") ?? {};
+          mappings[wallet.id] = wallet.dRepIdHex;
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(mappings));
         }
         return wallet;
       });
@@ -84,13 +78,14 @@ export const WalletList = ({
   };
 
   const handleWalletSelect = (wallet: Wallet) => {
-    if (typeof chrome !== 'undefined' && chrome.storage) {
+    if (typeof chrome !== "undefined" && chrome.storage) {
       chrome.storage.local.set({ selectedWalletId: wallet.id }, () => {
         chrome.runtime.sendMessage({
           type: "SET_SELECTED_WALLET_ID",
           walletId: wallet.id,
         });
-      });    } else {
+      });
+    } else {
       localStorage.setItem("selectedWalletId", wallet.id);
     }
 

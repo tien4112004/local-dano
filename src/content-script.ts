@@ -43,10 +43,7 @@ window.addEventListener("message", (event) => {
       "&walletId=" +
       encodeURIComponent(data.walletId);
 
-    window.postMessage(
-      { type: "LOCALDANO_EXTENSION_URL", path, url },
-      "*"
-    );
+    window.postMessage({ type: "LOCALDANO_EXTENSION_URL", path, url }, "*");
   }
 });
 
@@ -55,27 +52,39 @@ script.src = chrome.runtime.getURL("injected-script.js");
 script.onload = function () {
   script.remove();
 
-    setTimeout(() => {
-    chrome.storage.local.get(["selectedWalletId", "selectedAddress", "dRepIdHex"], (result) => {
-      if (result.selectedWalletId) {
-        window.postMessage({
-          type: "LOCALDANO_SET_WALLET_ID",
-          walletId: result.selectedWalletId,
-        }, "*");
+  setTimeout(() => {
+    chrome.storage.local.get(
+      ["selectedWalletId", "selectedAddress", "dRepIdHex"],
+      (result) => {
+        if (result.selectedWalletId) {
+          window.postMessage(
+            {
+              type: "LOCALDANO_SET_WALLET_ID",
+              walletId: result.selectedWalletId,
+            },
+            "*"
+          );
+        }
+        if (result.selectedAddress) {
+          window.postMessage(
+            {
+              type: "LOCALDANO_SET_ADDRESS",
+              address: result.selectedAddress,
+            },
+            "*"
+          );
+        }
+        if (result.dRepIdHex) {
+          window.postMessage(
+            {
+              type: "LOCALDANO_SET_DREP_ID_HEX",
+              dRepIdHex: result.dRepIdHex,
+            },
+            "*"
+          );
+        }
       }
-      if (result.selectedAddress) {
-        window.postMessage({
-          type: "LOCALDANO_SET_ADDRESS",
-          address: result.selectedAddress,
-        }, "*");
-      }
-      if (result.dRepIdHex) {
-        window.postMessage({
-          type: "LOCALDANO_SET_DREP_ID_HEX",
-          dRepIdHex: result.dRepIdHex,
-        }, "*");
-      }
-    });
+    );
   }, 100);
 };
 (document.head || document.documentElement).appendChild(script);
