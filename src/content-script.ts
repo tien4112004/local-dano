@@ -51,8 +51,15 @@ const script = document.createElement("script");
 script.src = chrome.runtime.getURL("injected-script.js");
 script.onload = function () {
   script.remove();
+};
+(document.head || document.documentElement).appendChild(script);
 
-  setTimeout(() => {
+window.addEventListener("message", (event) => {
+  if (event.source !== window) return;
+  const data = event.data as any;
+
+  if (data?.type === "LOCALDANO_PAGE_READY") {
+    // Get data from storage and send to page only when page signals readiness
     chrome.storage.local.get(
       ["selectedWalletId", "selectedAddress", "dRepIdHex"],
       (result) => {
@@ -83,8 +90,15 @@ script.onload = function () {
             "*"
           );
         }
+
+        // Acknowledge receipt to complete handshake
+        window.postMessage(
+          {
+            type: "LOCALDANO_CONTENT_READY",
+          },
+          "*"
+        );
       }
     );
-  }, 100);
-};
-(document.head || document.documentElement).appendChild(script);
+  }
+});

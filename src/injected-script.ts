@@ -19,6 +19,8 @@ window.addEventListener("message", (event) => {
   }
 });
 
+window.postMessage({ type: "LOCALDANO_PAGE_READY" }, "*");
+
 interface Extensions {
   extensions: Array<Extension>;
 }
